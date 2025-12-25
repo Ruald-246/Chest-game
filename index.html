@@ -443,6 +443,9 @@
             left: 50%;
             transform: translate(-50%, -50%);
             width: 500px;
+            max-width: calc(100vw - 40px);
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
             background: rgba(0, 0, 0, 0.95);
             border: 3px solid #ffd700;
             border-radius: 20px;
@@ -450,6 +453,14 @@
             z-index: 200;
             display: none;
             backdrop-filter: blur(15px);
+        }
+
+        @media (max-width: 600px) {
+            .upgrades-shop {
+                width: calc(100vw - 40px);
+                padding: 20px;
+                border-radius: 15px;
+            }
         }
 
         .upgrades-shop.show {
@@ -471,12 +482,25 @@
             color: #ffd700;
         }
 
+        @media (max-width: 600px) {
+            .upgrades-title {
+                font-size: 22px;
+            }
+        }
+
         .upgrade-item {
             background: rgba(255, 255, 255, 0.05);
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 15px;
             border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 600px) {
+            .upgrade-item {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
         }
 
         .upgrade-name {
@@ -486,10 +510,22 @@
             margin-bottom: 5px;
         }
 
+        @media (max-width: 600px) {
+            .upgrade-name {
+                font-size: 18px;
+            }
+        }
+
         .upgrade-desc {
             font-size: 14px;
             color: #ccc;
             margin-bottom: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .upgrade-desc {
+                font-size: 13px;
+            }
         }
 
         .upgrade-footer {
@@ -503,6 +539,12 @@
             color: #aaa;
         }
 
+        @media (max-width: 600px) {
+            .upgrade-level {
+                font-size: 14px;
+            }
+        }
+
         .upgrade-btn {
             background: linear-gradient(135deg, #ffd700, #ff8000);
             border: none;
@@ -513,6 +555,14 @@
             color: #000;
             cursor: pointer;
             transition: transform 0.2s;
+        }
+
+        @media (max-width: 600px) {
+            .upgrade-btn {
+                padding: 12px 18px;
+                font-size: 15px;
+                min-width: 80px;
+            }
         }
 
         .upgrade-btn:hover {
@@ -908,25 +958,69 @@
         }
 
         function createEnvironment() {
-            // Mystical Void - Starfield (reduced on mobile)
+            // Dense Galaxy Background
             const starGeometry = new THREE.BufferGeometry();
-            const starCount = isMobile ? 1000 : 5000;
+            const starCount = isMobile ? 8000 : 20000; // Much denser!
             const starPositions = new Float32Array(starCount * 3);
+            const starColors = new Float32Array(starCount * 3);
+            const starSizes = new Float32Array(starCount);
 
-            for (let i = 0; i < starCount * 3; i += 3) {
-                starPositions[i] = (Math.random() - 0.5) * 200;
-                starPositions[i + 1] = (Math.random() - 0.5) * 200;
-                starPositions[i + 2] = (Math.random() - 0.5) * 200;
+            for (let i = 0; i < starCount; i++) {
+                const i3 = i * 3;
+
+                // Positions - fill the entire sphere around the player
+                starPositions[i3] = (Math.random() - 0.5) * 300;
+                starPositions[i3 + 1] = (Math.random() - 0.5) * 300;
+                starPositions[i3 + 2] = (Math.random() - 0.5) * 300;
+
+                // Varied star colors (white, blue-white, yellow-white, hints of red)
+                const colorType = Math.random();
+                if (colorType < 0.6) {
+                    // Bright white stars (60%)
+                    starColors[i3] = 1.0;
+                    starColors[i3 + 1] = 1.0;
+                    starColors[i3 + 2] = 1.0;
+                } else if (colorType < 0.8) {
+                    // Blue-white stars (20%)
+                    starColors[i3] = 0.8 + Math.random() * 0.2;
+                    starColors[i3 + 1] = 0.9 + Math.random() * 0.1;
+                    starColors[i3 + 2] = 1.0;
+                } else if (colorType < 0.95) {
+                    // Yellow-white stars (15%)
+                    starColors[i3] = 1.0;
+                    starColors[i3 + 1] = 0.9 + Math.random() * 0.1;
+                    starColors[i3 + 2] = 0.7 + Math.random() * 0.2;
+                } else {
+                    // Red-orange stars (5%)
+                    starColors[i3] = 1.0;
+                    starColors[i3 + 1] = 0.5 + Math.random() * 0.3;
+                    starColors[i3 + 2] = 0.3 + Math.random() * 0.2;
+                }
+
+                // Varied sizes with some bright stars
+                const rand = Math.random();
+                if (rand < 0.05) {
+                    // 5% bright, large stars
+                    starSizes[i] = 1.5 + Math.random() * 2.0;
+                } else if (rand < 0.15) {
+                    // 10% medium stars
+                    starSizes[i] = 0.8 + Math.random() * 0.7;
+                } else {
+                    // 85% small stars (background)
+                    starSizes[i] = 0.2 + Math.random() * 0.4;
+                }
             }
 
             starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+            starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+            starGeometry.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
 
             const starMaterial = new THREE.PointsMaterial({
-                color: 0xffffff,
-                size: 0.3,
+                vertexColors: true,
                 transparent: true,
-                opacity: 0.8,
-                sizeAttenuation: true
+                opacity: 0.9,
+                sizeAttenuation: true,
+                blending: THREE.AdditiveBlending // Makes stars glow
             });
 
             const stars = new THREE.Points(starGeometry, starMaterial);
