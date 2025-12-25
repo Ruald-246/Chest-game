@@ -160,6 +160,116 @@
             width: 0%;
             transition: width 0.3s;
         }
+
+        /* Mobile Controls */
+        .mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .mobile-controls.active {
+            display: block;
+        }
+
+        .joystick-container {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            width: 150px;
+            height: 150px;
+            pointer-events: auto;
+        }
+
+        .joystick-base {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .joystick-stick {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 215, 0, 0.6);
+            border: 3px solid rgba(255, 215, 0, 0.8);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s;
+        }
+
+        .mobile-buttons {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: auto;
+        }
+
+        .mobile-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255, 215, 0, 0.3);
+            border: 3px solid rgba(255, 215, 0, 0.6);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 10px #ffd700;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .mobile-btn:active {
+            background: rgba(255, 215, 0, 0.6);
+            transform: scale(0.95);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .hud {
+                padding: 10px;
+                font-size: 14px;
+                top: 10px;
+                left: 10px;
+            }
+
+            .hud-value {
+                font-size: 18px;
+            }
+
+            .instructions {
+                display: none;
+            }
+
+            .crosshair {
+                width: 30px;
+                height: 30px;
+            }
+
+            .message {
+                padding: 20px 30px;
+                font-size: 18px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -195,6 +305,19 @@
     <div class="instructions">
         <p><strong>WASD</strong> - Move | <strong>Mouse</strong> - Look | <strong>Click</strong> - Open Chest</p>
         <p><strong>E</strong> - Collect Items | <strong>Q</strong> - Sell All</p>
+    </div>
+
+    <!-- Mobile Controls -->
+    <div class="mobile-controls" id="mobileControls">
+        <div class="joystick-container">
+            <div class="joystick-base" id="joystickBase">
+                <div class="joystick-stick" id="joystickStick"></div>
+            </div>
+        </div>
+        <div class="mobile-buttons">
+            <div class="mobile-btn" id="collectBtn">E</div>
+            <div class="mobile-btn" id="sellBtn">Q</div>
+        </div>
     </div>
 
     <!-- Message Display -->
@@ -295,6 +418,17 @@
         let moveSpeed = 0.1;
         let selectedChest = null;
 
+        // Mobile Detection
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        // Mobile Touch Controls
+        let joystickActive = false;
+        let joystickVector = { x: 0, y: 0 };
+        let lastTouchX = 0;
+        let lastTouchY = 0;
+        let touchStartX = 0;
+        let touchStartY = 0;
+
         // Initialize Three.js
         function init() {
             // Scene
@@ -312,11 +446,17 @@
 
             // Renderer
             const canvas = document.getElementById('gameCanvas');
-            renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer = new THREE.WebGLRenderer({
+                canvas,
+                antialias: !isMobile,
+                powerPreference: isMobile ? 'low-power' : 'high-performance'
+            });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
+            renderer.shadowMap.enabled = !isMobile;
+            if (!isMobile) {
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            }
 
             // Raycaster for clicking
             raycaster = new THREE.Raycaster();
@@ -335,21 +475,37 @@
             window.addEventListener('resize', onWindowResize);
             document.addEventListener('keydown', onKeyDown);
             document.addEventListener('keyup', onKeyUp);
-            document.addEventListener('click', onMouseClick);
-            document.addEventListener('mousemove', onMouseMove);
 
-            // Pointer Lock for first-person controls
-            canvas.addEventListener('click', () => {
-                canvas.requestPointerLock();
-            });
+            // Mobile vs Desktop Controls
+            if (isMobile) {
+                // Show mobile controls
+                document.getElementById('mobileControls').classList.add('active');
 
-            document.addEventListener('pointerlockchange', () => {
-                if (document.pointerLockElement === canvas) {
-                    document.addEventListener('mousemove', onPointerMove);
-                } else {
-                    document.removeEventListener('mousemove', onPointerMove);
-                }
-            });
+                // Setup mobile touch controls
+                setupMobileControls();
+
+                // Touch events for camera rotation
+                canvas.addEventListener('touchstart', onTouchStart);
+                canvas.addEventListener('touchmove', onTouchMove);
+                canvas.addEventListener('touchend', onTouchEnd);
+            } else {
+                // Desktop controls
+                document.addEventListener('click', onMouseClick);
+                document.addEventListener('mousemove', onMouseMove);
+
+                // Pointer Lock for first-person controls
+                canvas.addEventListener('click', () => {
+                    canvas.requestPointerLock();
+                });
+
+                document.addEventListener('pointerlockchange', () => {
+                    if (document.pointerLockElement === canvas) {
+                        document.addEventListener('mousemove', onPointerMove);
+                    } else {
+                        document.removeEventListener('mousemove', onPointerMove);
+                    }
+                });
+            }
 
             // Start Animation Loop
             animate();
@@ -386,9 +542,9 @@
         }
 
         function createEnvironment() {
-            // Mystical Void - Starfield
+            // Mystical Void - Starfield (reduced on mobile)
             const starGeometry = new THREE.BufferGeometry();
-            const starCount = 5000;
+            const starCount = isMobile ? 1000 : 5000;
             const starPositions = new Float32Array(starCount * 3);
 
             for (let i = 0; i < starCount * 3; i += 3) {
@@ -515,7 +671,7 @@
         }
 
         function createChestParticles(chest, chestType) {
-            const particleCount = Math.floor(chestType.emissiveIntensity * 100);
+            const particleCount = Math.floor(chestType.emissiveIntensity * (isMobile ? 30 : 100));
             const particleGeometry = new THREE.BufferGeometry();
             const positions = new Float32Array(particleCount * 3);
 
@@ -627,7 +783,7 @@
         }
 
         function createParticleBurst(position, color) {
-            const particleCount = 50;
+            const particleCount = isMobile ? 20 : 50;
             for (let i = 0; i < particleCount; i++) {
                 const geometry = new THREE.SphereGeometry(0.05, 8, 8);
                 const material = new THREE.MeshBasicMaterial({
@@ -797,6 +953,135 @@
             document.getElementById('valueDisplay').textContent = gameState.totalValue.toLocaleString();
         }
 
+        // Mobile Controls Setup
+        function setupMobileControls() {
+            const joystickBase = document.getElementById('joystickBase');
+            const joystickStick = document.getElementById('joystickStick');
+            const collectBtn = document.getElementById('collectBtn');
+            const sellBtn = document.getElementById('sellBtn');
+
+            // Joystick touch handling
+            joystickBase.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                joystickActive = true;
+                updateJoystick(e.touches[0]);
+            });
+
+            joystickBase.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (joystickActive) {
+                    updateJoystick(e.touches[0]);
+                }
+            });
+
+            joystickBase.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                joystickActive = false;
+                joystickVector = { x: 0, y: 0 };
+                joystickStick.style.transform = 'translate(-50%, -50%)';
+            });
+
+            function updateJoystick(touch) {
+                const rect = joystickBase.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+
+                const deltaX = touch.clientX - centerX;
+                const deltaY = touch.clientY - centerY;
+
+                const distance = Math.min(Math.sqrt(deltaX * deltaX + deltaY * deltaY), 45);
+                const angle = Math.atan2(deltaY, deltaX);
+
+                const x = Math.cos(angle) * distance;
+                const y = Math.sin(angle) * distance;
+
+                joystickStick.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+
+                // Normalize joystick vector
+                joystickVector.x = x / 45;
+                joystickVector.y = y / 45;
+            }
+
+            // Button handlers
+            collectBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                collectAllItems();
+            });
+
+            sellBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                sellAllItems();
+            });
+        }
+
+        // Touch Handlers for Camera Rotation and Chest Selection
+        function onTouchStart(event) {
+            if (event.touches.length === 1) {
+                touchStartX = event.touches[0].clientX;
+                touchStartY = event.touches[0].clientY;
+                lastTouchX = touchStartX;
+                lastTouchY = touchStartY;
+
+                // Check for chest tap
+                const touch = event.touches[0];
+                mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+
+                raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+                const intersects = raycaster.intersectObjects(chestObjects, true);
+
+                if (intersects.length > 0) {
+                    const intersectedChest = intersects[0].object.parent;
+                    // Store for potential tap
+                    selectedChest = intersectedChest;
+                }
+            }
+        }
+
+        function onTouchMove(event) {
+            event.preventDefault();
+
+            if (event.touches.length === 1) {
+                const touch = event.touches[0];
+                const deltaX = touch.clientX - lastTouchX;
+                const deltaY = touch.clientY - lastTouchY;
+
+                // Only rotate if moved significantly (to distinguish from tap)
+                const moveDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                if (moveDistance > 5) {
+                    // Rotate camera
+                    camera.rotation.y -= deltaX * 0.005;
+                    camera.rotation.x -= deltaY * 0.005;
+
+                    // Limit vertical rotation
+                    camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
+
+                    selectedChest = null; // Cancel tap if dragging
+                }
+
+                lastTouchX = touch.clientX;
+                lastTouchY = touch.clientY;
+            }
+        }
+
+        function onTouchEnd(event) {
+            // If we still have a selected chest, it's a tap (not a drag)
+            if (selectedChest) {
+                const touchEndX = lastTouchX;
+                const touchEndY = lastTouchY;
+                const dragDistance = Math.sqrt(
+                    Math.pow(touchEndX - touchStartX, 2) + Math.pow(touchEndY - touchStartY, 2)
+                );
+
+                // Only open if it was a tap (minimal drag)
+                if (dragDistance < 10) {
+                    openChest(selectedChest);
+                }
+            }
+
+            selectedChest = null;
+        }
+
         // Input Handlers
         function onKeyDown(event) {
             switch (event.code) {
@@ -901,12 +1186,26 @@
 
             velocity.set(0, 0, 0);
 
-            if (controls.forward) velocity.add(direction);
-            if (controls.backward) velocity.sub(direction);
-            if (controls.left) velocity.add(right);
-            if (controls.right) velocity.sub(right);
+            // Mobile joystick control
+            if (isMobile && joystickActive) {
+                // Forward/backward from joystick Y
+                const forwardAmount = -joystickVector.y;
+                velocity.add(direction.clone().multiplyScalar(forwardAmount));
 
-            velocity.normalize().multiplyScalar(moveSpeed);
+                // Left/right from joystick X
+                const rightAmount = joystickVector.x;
+                velocity.add(right.clone().multiplyScalar(rightAmount));
+            } else {
+                // Desktop keyboard controls
+                if (controls.forward) velocity.add(direction);
+                if (controls.backward) velocity.sub(direction);
+                if (controls.left) velocity.add(right);
+                if (controls.right) velocity.sub(right);
+            }
+
+            if (velocity.length() > 0) {
+                velocity.normalize().multiplyScalar(moveSpeed);
+            }
             camera.position.add(velocity);
 
             // Keep camera above ground
