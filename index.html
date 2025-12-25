@@ -522,7 +522,7 @@
     <!-- Instructions -->
     <div class="instructions">
         <p><strong>WASD</strong> - Move | <strong>Mouse</strong> - Look | <strong>Click</strong> - Open Chest</p>
-        <p><strong>E</strong> - Collect Items | <strong>Q</strong> - Sell All</p>
+        <p><strong>Q</strong> - Sell All Items | <strong>I</strong> - Toggle Inventory</p>
     </div>
 
     <!-- Mobile Controls -->
@@ -533,7 +533,6 @@
             </div>
         </div>
         <div class="mobile-buttons">
-            <div class="mobile-btn" id="collectBtn">E</div>
             <div class="mobile-btn" id="sellBtn">Q</div>
         </div>
     </div>
@@ -1153,7 +1152,7 @@
                 items.push(generateItem());
             }
 
-            // Create 3D items floating out
+            // Create 3D items floating out with animation
             items.forEach((item, index) => {
                 setTimeout(() => {
                     createFloatingItem(item, chest.position, index, items.length);
@@ -1162,7 +1161,18 @@
                 }, index * 200);
             });
 
-            showMessage(`Found ${itemCount} items! Press E to collect`, '#ffd700');
+            // Auto-collect after all items are shown
+            setTimeout(() => {
+                floatingItems.forEach(itemMesh => {
+                    scene.remove(itemMesh);
+                });
+                floatingItems = [];
+                showMessage(`Collected ${itemCount} items! ✨`, '#00ff00');
+                updateHUD();
+                updateInventoryPanel();
+            }, items.length * 200 + 1500); // Wait for all items to spawn + 1.5s display time
+
+            showMessage(`Found ${itemCount} items!`, '#ffd700');
             updateHUD();
         }
 
@@ -1379,23 +1389,6 @@
             floatingItems.push(itemGroup);
         }
 
-        function collectAllItems() {
-            if (floatingItems.length === 0) {
-                showMessage('No items to collect!', '#ff8800');
-                return;
-            }
-
-            const count = floatingItems.length;
-            floatingItems.forEach(itemMesh => {
-                scene.remove(itemMesh);
-            });
-            floatingItems = [];
-
-            showMessage(`Collected ${count} items! ✨`, '#00ff00');
-            updateHUD();
-            updateInventoryPanel();
-        }
-
         function sellAllItems() {
             if (gameState.inventory.length === 0) {
                 showMessage('No items to sell!', '#ff8800');
@@ -1507,7 +1500,6 @@
         function setupMobileControls() {
             const joystickBase = document.getElementById('joystickBase');
             const joystickStick = document.getElementById('joystickStick');
-            const collectBtn = document.getElementById('collectBtn');
             const sellBtn = document.getElementById('sellBtn');
 
             // Joystick touch handling
@@ -1552,12 +1544,7 @@
                 joystickVector.y = y / 45;
             }
 
-            // Button handlers
-            collectBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                collectAllItems();
-            });
-
+            // Button handler
             sellBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 sellAllItems();
@@ -1639,8 +1626,8 @@
                 case 'KeyS': controls.backward = true; break;
                 case 'KeyA': controls.left = true; break;
                 case 'KeyD': controls.right = true; break;
-                case 'KeyE': collectAllItems(); break;
                 case 'KeyQ': sellAllItems(); break;
+                case 'KeyI': toggleInventoryPanel(); break;
             }
         }
 
