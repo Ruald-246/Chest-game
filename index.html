@@ -1161,12 +1161,12 @@
                 chestType.position.z
             );
 
-            // Rotate chest to face center (player spawn)
+            // Rotate chest to face AWAY from center (toward player)
             const angleToCenter = Math.atan2(
                 -chestType.position.z,
                 -chestType.position.x
             );
-            chestGroup.rotation.y = angleToCenter;
+            chestGroup.rotation.y = angleToCenter + Math.PI; // Add PI to face outward
 
             // Store references for opening animation
             chestGroup.userData.lid = lid;
