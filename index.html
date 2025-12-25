@@ -177,38 +177,6 @@
             display: block;
         }
 
-        .joystick-container {
-            position: absolute;
-            bottom: 40px;
-            left: 40px;
-            width: 150px;
-            height: 150px;
-            pointer-events: auto;
-        }
-
-        .joystick-base {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 3px solid rgba(255, 215, 0, 0.3);
-            position: relative;
-            backdrop-filter: blur(10px);
-        }
-
-        .joystick-stick {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: rgba(255, 215, 0, 0.6);
-            border: 3px solid rgba(255, 215, 0, 0.8);
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            transition: all 0.1s;
-        }
-
         .mobile-buttons {
             position: absolute;
             bottom: 40px;
@@ -701,11 +669,6 @@
 
     <!-- Mobile Controls -->
     <div class="mobile-controls" id="mobileControls">
-        <div class="joystick-container">
-            <div class="joystick-base" id="joystickBase">
-                <div class="joystick-stick" id="joystickStick"></div>
-            </div>
-        </div>
         <div class="mobile-buttons">
             <div class="mobile-btn" id="sellBtn">Q</div>
         </div>
@@ -820,8 +783,11 @@
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         // Mobile Touch Controls
-        let joystickActive = false;
-        let joystickVector = { x: 0, y: 0 };
+        // Swipe movement variables
+        let swipeVelocity = { x: 0, z: 0 };
+        let swipeStartPos = { x: 0, y: 0 };
+        let swipeStartTime = 0;
+        let isSwiping = false;
         let lastTouchX = 0;
         let lastTouchY = 0;
         let touchStartX = 0;
@@ -1057,18 +1023,40 @@
                 chestGroup.add(vertBand);
             }
 
-            // Chest Lid (top part)
-            const lidGeometry = new THREE.BoxGeometry(2, 0.3, 1.5);
-            const lid = new THREE.Mesh(lidGeometry, baseMaterial);
-            lid.position.y = 0.9;
-            lid.castShadow = true;
-            chestGroup.add(lid);
+            // Chest Lid (two flaps that open outward)
+            // Left flap
+            const leftFlapGroup = new THREE.Group();
+            const leftFlapGeometry = new THREE.BoxGeometry(1, 0.3, 1.5);
+            const leftFlap = new THREE.Mesh(leftFlapGeometry, baseMaterial);
+            leftFlap.position.x = 0.5; // Offset from pivot point (hinge)
+            leftFlap.castShadow = true;
+            leftFlapGroup.add(leftFlap);
 
-            // Lid band
-            const lidBandGeometry = new THREE.BoxGeometry(2.1, 0.15, 1.6);
-            const lidBand = new THREE.Mesh(lidBandGeometry, bandMaterial);
-            lidBand.position.y = 0.9;
-            lid.add(lidBand);
+            // Left flap band
+            const leftFlapBandGeometry = new THREE.BoxGeometry(1.05, 0.15, 1.6);
+            const leftFlapBand = new THREE.Mesh(leftFlapBandGeometry, bandMaterial);
+            leftFlapBand.position.x = 0.5;
+            leftFlapGroup.add(leftFlapBand);
+
+            leftFlapGroup.position.set(-0.5, 0.9, 0); // Position at left edge
+            chestGroup.add(leftFlapGroup);
+
+            // Right flap
+            const rightFlapGroup = new THREE.Group();
+            const rightFlapGeometry = new THREE.BoxGeometry(1, 0.3, 1.5);
+            const rightFlap = new THREE.Mesh(rightFlapGeometry, baseMaterial);
+            rightFlap.position.x = -0.5; // Offset from pivot point (hinge)
+            rightFlap.castShadow = true;
+            rightFlapGroup.add(rightFlap);
+
+            // Right flap band
+            const rightFlapBandGeometry = new THREE.BoxGeometry(1.05, 0.15, 1.6);
+            const rightFlapBand = new THREE.Mesh(rightFlapBandGeometry, bandMaterial);
+            rightFlapBand.position.x = -0.5;
+            rightFlapGroup.add(rightFlapBand);
+
+            rightFlapGroup.position.set(0.5, 0.9, 0); // Position at right edge
+            chestGroup.add(rightFlapGroup);
 
             // Hinges
             for (let x of [-0.8, 0.8]) {
@@ -1169,7 +1157,8 @@
             chestGroup.rotation.y = angleToCenter + Math.PI; // Add PI to face outward
 
             // Store references for opening animation
-            chestGroup.userData.lid = lid;
+            chestGroup.userData.leftFlap = leftFlapGroup;
+            chestGroup.userData.rightFlap = rightFlapGroup;
             chestGroup.userData.lock = lockGroup;
             chestGroup.userData.isOpening = false;
             chestGroup.userData.isOpen = false;
@@ -1238,20 +1227,22 @@
         }
 
         function animateChestOpening(chest, chestType) {
-            const lid = chest.userData.lid;
+            const leftFlap = chest.userData.leftFlap;
+            const rightFlap = chest.userData.rightFlap;
             const lock = chest.userData.lock;
             let angle = 0;
-            const maxAngle = Math.PI * 0.6;
+            const maxAngle = Math.PI * 0.5; // 90 degrees
 
             // Create explosion of light
             createLightExplosion(chest.position, chestType.emissive);
 
-            // Animate lid opening
+            // Animate both flaps opening outward
             const openInterval = setInterval(() => {
                 angle += 0.05;
-                lid.rotation.x = -angle;
-                lid.position.z = Math.sin(angle) * 0.75;
-                lid.position.y = 0.9 + Math.sin(angle) * 0.5;
+
+                // Rotate flaps outward along Z-axis
+                leftFlap.rotation.z = angle;  // Left flap rotates counter-clockwise
+                rightFlap.rotation.z = -angle; // Right flap rotates clockwise
 
                 // Make lock disappear
                 lock.scale.multiplyScalar(0.95);
@@ -1768,51 +1759,7 @@
 
         // Mobile Controls Setup
         function setupMobileControls() {
-            const joystickBase = document.getElementById('joystickBase');
-            const joystickStick = document.getElementById('joystickStick');
             const sellBtn = document.getElementById('sellBtn');
-
-            // Joystick touch handling
-            joystickBase.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                joystickActive = true;
-                updateJoystick(e.touches[0]);
-            });
-
-            joystickBase.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                if (joystickActive) {
-                    updateJoystick(e.touches[0]);
-                }
-            });
-
-            joystickBase.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                joystickActive = false;
-                joystickVector = { x: 0, y: 0 };
-                joystickStick.style.transform = 'translate(-50%, -50%)';
-            });
-
-            function updateJoystick(touch) {
-                const rect = joystickBase.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-
-                const deltaX = touch.clientX - centerX;
-                const deltaY = touch.clientY - centerY;
-
-                const distance = Math.min(Math.sqrt(deltaX * deltaX + deltaY * deltaY), 45);
-                const angle = Math.atan2(deltaY, deltaX);
-
-                const x = Math.cos(angle) * distance;
-                const y = Math.sin(angle) * distance;
-
-                joystickStick.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
-
-                // Normalize joystick vector
-                joystickVector.x = x / 45;
-                joystickVector.y = y / 45;
-            }
 
             // Button handler
             sellBtn.addEventListener('touchstart', (e) => {
@@ -1821,26 +1768,32 @@
             });
         }
 
-        // Touch Handlers for Camera Rotation and Chest Selection
+        // Touch Handlers for Camera Rotation and Swipe Movement
         function onTouchStart(event) {
             if (event.touches.length === 1) {
-                touchStartX = event.touches[0].clientX;
-                touchStartY = event.touches[0].clientY;
+                const touch = event.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
                 lastTouchX = touchStartX;
                 lastTouchY = touchStartY;
+                swipeStartTime = Date.now();
+                swipeStartPos = { x: touchStartX, y: touchStartY };
 
-                // Check for chest tap
-                const touch = event.touches[0];
-                mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+                // Determine if touch is in bottom third (movement zone)
+                isSwiping = touchStartY > window.innerHeight * 0.65;
 
-                raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-                const intersects = raycaster.intersectObjects(chestObjects, true);
+                // Check for chest tap if not in swipe zone
+                if (!isSwiping) {
+                    mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+                    mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
 
-                if (intersects.length > 0) {
-                    const intersectedChest = intersects[0].object.parent;
-                    // Store for potential tap
-                    selectedChest = intersectedChest;
+                    raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+                    const intersects = raycaster.intersectObjects(chestObjects, true);
+
+                    if (intersects.length > 0) {
+                        const intersectedChest = intersects[0].object.parent;
+                        selectedChest = intersectedChest;
+                    }
                 }
             }
         }
@@ -1852,18 +1805,42 @@
                 const touch = event.touches[0];
                 const deltaX = touch.clientX - lastTouchX;
                 const deltaY = touch.clientY - lastTouchY;
-
-                // Only rotate if moved significantly (to distinguish from tap)
                 const moveDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
                 if (moveDistance > 5) {
-                    // Rotate camera
-                    camera.rotation.y -= deltaX * 0.005;
-                    camera.rotation.x -= deltaY * 0.005;
+                    if (isSwiping) {
+                        // Calculate swipe velocity for movement
+                        const elapsed = (Date.now() - swipeStartTime) / 1000;
+                        const totalDeltaX = touch.clientX - swipeStartPos.x;
+                        const totalDeltaY = touch.clientY - swipeStartPos.y;
 
-                    // Limit vertical rotation
-                    camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
+                        // Convert screen delta to world movement
+                        // Use camera's rotation to determine forward/right directions
+                        const cameraYaw = camera.rotation.y;
+                        const forward = new THREE.Vector3(
+                            Math.sin(cameraYaw),
+                            0,
+                            Math.cos(cameraYaw)
+                        );
+                        const right = new THREE.Vector3(
+                            Math.cos(cameraYaw),
+                            0,
+                            -Math.sin(cameraYaw)
+                        );
 
-                    selectedChest = null; // Cancel tap if dragging
+                        // Map swipe to velocity (Y is inverted for forward/back)
+                        const swipeForward = -totalDeltaY * 0.002;
+                        const swipeRight = totalDeltaX * 0.002;
+
+                        swipeVelocity.x = right.x * swipeRight + forward.x * swipeForward;
+                        swipeVelocity.z = right.z * swipeRight + forward.z * swipeForward;
+                    } else {
+                        // Rotate camera (upper part of screen)
+                        camera.rotation.y -= deltaX * 0.005;
+                        camera.rotation.x -= deltaY * 0.005;
+                        camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
+                        selectedChest = null;
+                    }
                 }
 
                 lastTouchX = touch.clientX;
@@ -1872,21 +1849,19 @@
         }
 
         function onTouchEnd(event) {
-            // If we still have a selected chest, it's a tap (not a drag)
-            if (selectedChest) {
-                const touchEndX = lastTouchX;
-                const touchEndY = lastTouchY;
+            // If we still have a selected chest, it's a tap
+            if (selectedChest && !isSwiping) {
                 const dragDistance = Math.sqrt(
-                    Math.pow(touchEndX - touchStartX, 2) + Math.pow(touchEndY - touchStartY, 2)
+                    Math.pow(lastTouchX - touchStartX, 2) + Math.pow(lastTouchY - touchStartY, 2)
                 );
 
-                // Only open if it was a tap (minimal drag)
                 if (dragDistance < 10) {
                     openChest(selectedChest);
                 }
             }
 
             selectedChest = null;
+            isSwiping = false;
         }
 
         // Input Handlers
@@ -1993,10 +1968,9 @@
                     chest.userData.isOpening = false;
                     chest.userData.respawnTime = 0;
 
-                    // Reset lid
-                    chest.userData.lid.rotation.x = 0;
-                    chest.userData.lid.position.z = 0;
-                    chest.userData.lid.position.y = 0.9;
+                    // Reset flaps
+                    chest.userData.leftFlap.rotation.z = 0;
+                    chest.userData.rightFlap.rotation.z = 0;
 
                     // Reset lock
                     chest.userData.lock.scale.set(1, 1, 1);
@@ -2048,15 +2022,25 @@
 
             velocity.set(0, 0, 0);
 
-            // Mobile joystick control
-            if (isMobile && joystickActive) {
-                // Forward/backward from joystick Y
-                const forwardAmount = -joystickVector.y;
-                velocity.add(direction.clone().multiplyScalar(forwardAmount));
+            // Mobile swipe control
+            if (isMobile) {
+                // Apply swipe velocity with smooth deceleration
+                const swipeMagnitude = Math.sqrt(swipeVelocity.x * swipeVelocity.x + swipeVelocity.z * swipeVelocity.z);
+                if (swipeMagnitude > 0.001) {
+                    velocity.x = swipeVelocity.x;
+                    velocity.z = swipeVelocity.z;
 
-                // Left/right from joystick X
-                const rightAmount = joystickVector.x;
-                velocity.add(right.clone().multiplyScalar(rightAmount));
+                    // Apply deceleration
+                    const deceleration = 0.92;
+                    swipeVelocity.x *= deceleration;
+                    swipeVelocity.z *= deceleration;
+
+                    // Stop if velocity is very small
+                    if (swipeMagnitude < 0.001) {
+                        swipeVelocity.x = 0;
+                        swipeVelocity.z = 0;
+                    }
+                }
             } else {
                 // Desktop keyboard controls
                 if (controls.forward) velocity.add(direction);
@@ -2066,11 +2050,18 @@
             }
 
             if (velocity.length() > 0) {
-                // Apply sprint multiplier
-                const currentSpeed = moveSpeed * (controls.sprint ? sprintMultiplier : 1);
+                // Apply sprint multiplier (desktop only)
+                const currentSpeed = moveSpeed * (isMobile ? 1 : (controls.sprint ? sprintMultiplier : 1));
                 // Apply move speed upgrade
                 const upgradeBonus = 1 + (upgrades.moveSpeed.level * 0.2);
-                velocity.normalize().multiplyScalar(currentSpeed * upgradeBonus);
+
+                if (!isMobile) {
+                    // Only normalize for keyboard input
+                    velocity.normalize().multiplyScalar(currentSpeed * upgradeBonus);
+                } else {
+                    // For swipe, just apply speed multiplier
+                    velocity.multiplyScalar(upgradeBonus);
+                }
             }
             camera.position.add(velocity);
 
