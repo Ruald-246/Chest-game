@@ -243,6 +243,192 @@
             transform: scale(0.95);
         }
 
+        /* Inventory Panel */
+        .inventory-panel {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            width: 320px;
+            max-height: 600px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .inventory-panel.hidden {
+            transform: translateY(-50%) translateX(400px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .inventory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .inventory-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .inventory-close {
+            cursor: pointer;
+            font-size: 24px;
+            color: #ffd700;
+            background: none;
+            border: none;
+            padding: 5px;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-height: 480px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .inventory-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .inventory-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .inventory-grid::-webkit-scrollbar-thumb {
+            background: rgba(255, 215, 0, 0.5);
+            border-radius: 4px;
+        }
+
+        .inventory-slot {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .inventory-slot:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+
+        .inventory-slot .item-icon-text {
+            font-size: 28px;
+            margin-bottom: 4px;
+        }
+
+        .inventory-slot .item-name-text {
+            font-size: 9px;
+            text-align: center;
+            line-height: 1.1;
+            color: #fff;
+        }
+
+        .inventory-slot .item-value-text {
+            font-size: 10px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .inventory-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #888;
+            padding: 40px 20px;
+        }
+
+        .inventory-toggle {
+            position: fixed;
+            top: 120px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 101;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+
+        .inventory-toggle:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
+
+        .inventory-toggle .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4444;
+            color: white;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        /* Item Tooltip */
+        .item-tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 1000;
+            pointer-events: none;
+            min-width: 200px;
+            display: none;
+        }
+
+        .item-tooltip.show {
+            display: block;
+        }
+
+        .tooltip-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .tooltip-type {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+
+        .tooltip-value {
+            font-size: 14px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .hud {
@@ -268,6 +454,16 @@
             .message {
                 padding: 20px 30px;
                 font-size: 18px;
+            }
+
+            .inventory-panel {
+                width: calc(100% - 40px);
+                right: 20px;
+                max-height: 50vh;
+            }
+
+            .inventory-toggle {
+                top: 80px;
             }
         }
     </style>
@@ -300,6 +496,28 @@
 
     <!-- Crosshair -->
     <div class="crosshair" id="crosshair"></div>
+
+    <!-- Inventory Toggle Button -->
+    <div class="inventory-toggle" id="inventoryToggle">
+        🎒
+        <span class="badge" id="inventoryCount">0</span>
+    </div>
+
+    <!-- Inventory Panel -->
+    <div class="inventory-panel hidden" id="inventoryPanel">
+        <div class="inventory-header">
+            <div class="inventory-title">📦 Inventory</div>
+            <button class="inventory-close" id="inventoryClose">✕</button>
+        </div>
+        <div class="inventory-grid" id="inventoryGridPanel"></div>
+    </div>
+
+    <!-- Item Tooltip -->
+    <div class="item-tooltip" id="itemTooltip">
+        <div class="tooltip-name" id="tooltipName"></div>
+        <div class="tooltip-type" id="tooltipType"></div>
+        <div class="tooltip-value" id="tooltipValue"></div>
+    </div>
 
     <!-- Instructions -->
     <div class="instructions">
@@ -507,6 +725,10 @@
                 });
             }
 
+            // Inventory event listeners
+            document.getElementById('inventoryToggle').addEventListener('click', toggleInventoryPanel);
+            document.getElementById('inventoryClose').addEventListener('click', toggleInventoryPanel);
+
             // Start Animation Loop
             animate();
 
@@ -634,6 +856,29 @@
             base.receiveShadow = true;
             chestGroup.add(base);
 
+            // Decorative metal bands
+            const bandMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4a4a4a,
+                roughness: 0.2,
+                metalness: 0.9
+            });
+
+            // Horizontal bands
+            for (let i = 0; i < 3; i++) {
+                const bandGeometry = new THREE.BoxGeometry(2.1, 0.1, 1.6);
+                const band = new THREE.Mesh(bandGeometry, bandMaterial);
+                band.position.y = -0.5 + i * 0.5;
+                chestGroup.add(band);
+            }
+
+            // Vertical corner bands
+            for (let x of [-0.9, 0.9]) {
+                const vertBandGeometry = new THREE.BoxGeometry(0.1, 1.6, 1.6);
+                const vertBand = new THREE.Mesh(vertBandGeometry, bandMaterial);
+                vertBand.position.x = x;
+                chestGroup.add(vertBand);
+            }
+
             // Chest Lid (top part)
             const lidGeometry = new THREE.BoxGeometry(2, 0.3, 1.5);
             const lid = new THREE.Mesh(lidGeometry, baseMaterial);
@@ -641,8 +886,25 @@
             lid.castShadow = true;
             chestGroup.add(lid);
 
-            // Lock decoration
-            const lockGeometry = new THREE.BoxGeometry(0.3, 0.4, 0.2);
+            // Lid band
+            const lidBandGeometry = new THREE.BoxGeometry(2.1, 0.15, 1.6);
+            const lidBand = new THREE.Mesh(lidBandGeometry, bandMaterial);
+            lidBand.position.y = 0.9;
+            lid.add(lidBand);
+
+            // Hinges
+            for (let x of [-0.8, 0.8]) {
+                const hingeGeometry = new THREE.BoxGeometry(0.15, 0.2, 0.2);
+                const hinge = new THREE.Mesh(hingeGeometry, bandMaterial);
+                hinge.position.set(x, 0.9, -0.7);
+                chestGroup.add(hinge);
+            }
+
+            // Lock decoration (more detailed)
+            const lockGroup = new THREE.Group();
+
+            // Lock base plate
+            const lockPlateGeometry = new THREE.BoxGeometry(0.4, 0.5, 0.15);
             const lockMaterial = new THREE.MeshStandardMaterial({
                 color: 0xffd700,
                 emissive: 0xffd700,
@@ -650,9 +912,69 @@
                 roughness: 0.3,
                 metalness: 0.9
             });
-            const lock = new THREE.Mesh(lockGeometry, lockMaterial);
-            lock.position.set(0, 0, 0.8);
-            chestGroup.add(lock);
+            const lockPlate = new THREE.Mesh(lockPlateGeometry, lockMaterial);
+            lockGroup.add(lockPlate);
+
+            // Lock keyhole
+            const keyholeGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.2, 8);
+            const keyholeMaterial = new THREE.MeshStandardMaterial({
+                color: 0x000000,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            const keyhole = new THREE.Mesh(keyholeGeometry, keyholeMaterial);
+            keyhole.rotation.z = Math.PI / 2;
+            keyhole.position.z = 0.05;
+            lockGroup.add(keyhole);
+
+            lockGroup.position.set(0, 0, 0.85);
+            chestGroup.add(lockGroup);
+
+            // Add gems/crystals for higher rarity chests
+            if (chestType.rarity === 'epic' || chestType.rarity === 'legendary') {
+                const gemCount = chestType.rarity === 'legendary' ? 5 : 3;
+                for (let i = 0; i < gemCount; i++) {
+                    const gemGeometry = new THREE.OctahedronGeometry(0.12, 0);
+                    const gemMaterial = new THREE.MeshStandardMaterial({
+                        color: chestType.emissive,
+                        emissive: chestType.emissive,
+                        emissiveIntensity: 1,
+                        roughness: 0.1,
+                        metalness: 0.1,
+                        transparent: true,
+                        opacity: 0.8
+                    });
+                    const gem = new THREE.Mesh(gemGeometry, gemMaterial);
+
+                    const angle = (i / gemCount) * Math.PI * 2;
+                    gem.position.set(
+                        Math.cos(angle) * 0.9,
+                        0,
+                        Math.sin(angle) * 0.7
+                    );
+                    gem.rotation.y = angle;
+                    chestGroup.add(gem);
+                }
+            }
+
+            // Add floating runes for legendary chest
+            if (chestType.rarity === 'legendary') {
+                const runeGeometry = new THREE.TorusGeometry(0.3, 0.05, 8, 16);
+                const runeMaterial = new THREE.MeshStandardMaterial({
+                    color: chestType.emissive,
+                    emissive: chestType.emissive,
+                    emissiveIntensity: 1,
+                    transparent: true,
+                    opacity: 0.6
+                });
+                const rune = new THREE.Mesh(runeGeometry, runeMaterial);
+                rune.rotation.x = Math.PI / 2;
+                rune.position.y = -0.8;
+                chestGroup.add(rune);
+
+                // Store for animation
+                chestGroup.userData.rune = rune;
+            }
 
             // Position chest
             chestGroup.position.set(
@@ -661,9 +983,9 @@
                 chestType.position.z
             );
 
-            // Store lid reference for opening animation
+            // Store references for opening animation
             chestGroup.userData.lid = lid;
-            chestGroup.userData.lock = lock;
+            chestGroup.userData.lock = lockGroup;
             chestGroup.userData.isOpening = false;
             chestGroup.userData.isOpen = false;
 
@@ -867,44 +1189,194 @@
         }
 
         function createFloatingItem(item, chestPosition, index, total) {
-            // Create item geometry based on type
+            const itemGroup = new THREE.Group();
+
+            // Create more detailed item geometry based on type
             let geometry;
             if (item.type === 'weapons') {
-                geometry = new THREE.ConeGeometry(0.2, 0.8, 4);
+                // Sword-like shape
+                const bladeGeometry = new THREE.BoxGeometry(0.1, 1, 0.05);
+                const blade = new THREE.Mesh(bladeGeometry, new THREE.MeshStandardMaterial({
+                    color: 0xcccccc,
+                    emissive: rarityMultipliers[item.rarity].color,
+                    emissiveIntensity: 0.3,
+                    roughness: 0.3,
+                    metalness: 0.9
+                }));
+                blade.position.y = 0.3;
+                itemGroup.add(blade);
+
+                // Guard
+                const guardGeometry = new THREE.BoxGeometry(0.4, 0.1, 0.1);
+                const guard = new THREE.Mesh(guardGeometry, new THREE.MeshStandardMaterial({
+                    color: item.color,
+                    roughness: 0.4,
+                    metalness: 0.8
+                }));
+                itemGroup.add(guard);
+
+                // Handle
+                const handleGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.3, 8);
+                const handle = new THREE.Mesh(handleGeometry, new THREE.MeshStandardMaterial({
+                    color: item.color,
+                    roughness: 0.6,
+                    metalness: 0.4
+                }));
+                handle.position.y = -0.15;
+                itemGroup.add(handle);
+
+                // Pommel
+                const pommelGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+                const pommel = new THREE.Mesh(pommelGeometry, new THREE.MeshStandardMaterial({
+                    color: rarityMultipliers[item.rarity].color,
+                    emissive: rarityMultipliers[item.rarity].color,
+                    emissiveIntensity: 0.7,
+                    roughness: 0.2,
+                    metalness: 0.9
+                }));
+                pommel.position.y = -0.35;
+                itemGroup.add(pommel);
+
             } else if (item.type === 'armor') {
-                geometry = new THREE.BoxGeometry(0.5, 0.6, 0.1);
+                // Shield shape
+                const shieldGeometry = new THREE.CylinderGeometry(0.4, 0.35, 0.1, 6);
+                const shield = new THREE.Mesh(shieldGeometry, new THREE.MeshStandardMaterial({
+                    color: item.color,
+                    emissive: rarityMultipliers[item.rarity].color,
+                    emissiveIntensity: 0.4,
+                    roughness: 0.4,
+                    metalness: 0.8
+                }));
+                shield.rotation.x = Math.PI / 2;
+                itemGroup.add(shield);
+
+                // Shield emblem
+                const emblemGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+                const emblem = new THREE.Mesh(emblemGeometry, new THREE.MeshStandardMaterial({
+                    color: rarityMultipliers[item.rarity].color,
+                    emissive: rarityMultipliers[item.rarity].color,
+                    emissiveIntensity: 0.8,
+                    roughness: 0.2,
+                    metalness: 0.9
+                }));
+                emblem.position.z = 0.1;
+                itemGroup.add(emblem);
+
             } else if (item.type === 'potions') {
-                geometry = new THREE.CylinderGeometry(0.15, 0.15, 0.6, 8);
-            } else {
-                geometry = new THREE.OctahedronGeometry(0.3);
+                // Potion bottle
+                const bottleGeometry = new THREE.CylinderGeometry(0.12, 0.15, 0.5, 8);
+                const bottle = new THREE.Mesh(bottleGeometry, new THREE.MeshStandardMaterial({
+                    color: item.color,
+                    emissive: rarityMultipliers[item.rarity].color,
+                    emissiveIntensity: 0.6,
+                    roughness: 0.1,
+                    metalness: 0.1,
+                    transparent: true,
+                    opacity: 0.7
+                }));
+                itemGroup.add(bottle);
+
+                // Cork
+                const corkGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.12, 8);
+                const cork = new THREE.Mesh(corkGeometry, new THREE.MeshStandardMaterial({
+                    color: 0x8B4513,
+                    roughness: 0.9,
+                    metalness: 0.1
+                }));
+                cork.position.y = 0.31;
+                itemGroup.add(cork);
+
+                // Liquid glow inside
+                const liquidGeometry = new THREE.CylinderGeometry(0.1, 0.13, 0.4, 8);
+                const liquid = new THREE.Mesh(liquidGeometry, new THREE.MeshStandardMaterial({
+                    color: rarityMultipliers[item.rarity].color,
+                    emissive: rarityMultipliers[item.rarity].color,
+                    emissiveIntensity: 1,
+                    transparent: true,
+                    opacity: 0.8
+                }));
+                liquid.position.y = -0.05;
+                itemGroup.add(liquid);
+
+            } else { // special items
+                // Crystal/Gem
+                const gemGeometry = new THREE.OctahedronGeometry(0.3, 0);
+                const gem = new THREE.Mesh(gemGeometry, new THREE.MeshStandardMaterial({
+                    color: item.color,
+                    emissive: rarityMultipliers[item.rarity].color,
+                    emissiveIntensity: 0.8,
+                    roughness: 0.1,
+                    metalness: 0.2,
+                    transparent: true,
+                    opacity: 0.9
+                }));
+                itemGroup.add(gem);
+
+                // Inner glow
+                const glowGeometry = new THREE.OctahedronGeometry(0.2, 0);
+                const glow = new THREE.Mesh(glowGeometry, new THREE.MeshBasicMaterial({
+                    color: rarityMultipliers[item.rarity].color,
+                    transparent: true,
+                    opacity: 0.5
+                }));
+                itemGroup.add(glow);
             }
 
-            const material = new THREE.MeshStandardMaterial({
-                color: item.color,
-                emissive: rarityMultipliers[item.rarity].color,
-                emissiveIntensity: 0.5,
-                roughness: 0.3,
-                metalness: 0.7
-            });
+            // Add particle trail for rare items
+            if (item.rarity !== 'common' && item.rarity !== 'uncommon') {
+                const particleGeometry = new THREE.SphereGeometry(0.05, 4, 4);
+                const particleMaterial = new THREE.MeshBasicMaterial({
+                    color: rarityMultipliers[item.rarity].color,
+                    transparent: true,
+                    opacity: 0.6
+                });
 
-            const mesh = new THREE.Mesh(geometry, material);
+                for (let i = 0; i < 3; i++) {
+                    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                    particle.position.y = -0.3 - (i * 0.15);
+                    particle.scale.set(1 - i * 0.3, 1 - i * 0.3, 1 - i * 0.3);
+                    itemGroup.add(particle);
+                }
+            }
+
+            // Create floating text label
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 64;
+
+            context.fillStyle = `rgba(0, 0, 0, 0.7)`;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            context.font = 'Bold 20px Arial';
+            context.fillStyle = '#' + rarityMultipliers[item.rarity].color.toString(16).padStart(6, '0');
+            context.textAlign = 'center';
+            context.fillText(item.name, 128, 35);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const labelMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+            const label = new THREE.Sprite(labelMaterial);
+            label.scale.set(2, 0.5, 1);
+            label.position.y = 1;
+            itemGroup.add(label);
 
             // Position in a circle above the chest
             const angle = (index / total) * Math.PI * 2;
             const radius = 2;
-            mesh.position.set(
+            itemGroup.position.set(
                 chestPosition.x + Math.cos(angle) * radius,
                 chestPosition.y + 2,
                 chestPosition.z + Math.sin(angle) * radius
             );
 
-            mesh.userData.item = item;
-            mesh.userData.floatSpeed = Math.random() * 0.02 + 0.01;
-            mesh.userData.rotationSpeed = Math.random() * 0.05 + 0.02;
-            mesh.userData.floatOffset = Math.random() * Math.PI * 2;
+            itemGroup.userData.item = item;
+            itemGroup.userData.floatSpeed = Math.random() * 0.02 + 0.01;
+            itemGroup.userData.rotationSpeed = Math.random() * 0.05 + 0.02;
+            itemGroup.userData.floatOffset = Math.random() * Math.PI * 2;
+            itemGroup.userData.initialY = itemGroup.position.y;
 
-            scene.add(mesh);
-            floatingItems.push(mesh);
+            scene.add(itemGroup);
+            floatingItems.push(itemGroup);
         }
 
         function collectAllItems() {
@@ -920,6 +1392,8 @@
             floatingItems = [];
 
             showMessage(`Collected ${count} items! ✨`, '#00ff00');
+            updateHUD();
+            updateInventoryPanel();
         }
 
         function sellAllItems() {
@@ -934,6 +1408,7 @@
 
             showMessage(`Sold all items for ${totalValue} gold! 💰`, '#00ff00');
             updateHUD();
+            updateInventoryPanel();
         }
 
         function showMessage(text, color) {
@@ -951,6 +1426,81 @@
             document.getElementById('goldDisplay').textContent = gameState.gold.toLocaleString();
             document.getElementById('chestsDisplay').textContent = gameState.chestsOpened.toLocaleString();
             document.getElementById('valueDisplay').textContent = gameState.totalValue.toLocaleString();
+            document.getElementById('inventoryCount').textContent = gameState.inventory.length;
+        }
+
+        function updateInventoryPanel() {
+            const gridPanel = document.getElementById('inventoryGridPanel');
+            gridPanel.innerHTML = '';
+
+            if (gameState.inventory.length === 0) {
+                gridPanel.innerHTML = '<div class="inventory-empty">No items collected yet!<br>Open chests to find treasures.</div>';
+                return;
+            }
+
+            gameState.inventory.forEach((item, index) => {
+                const slot = document.createElement('div');
+                slot.className = 'inventory-slot';
+                slot.style.borderColor = '#' + rarityMultipliers[item.rarity].color.toString(16).padStart(6, '0');
+
+                // Get item icon based on type
+                let icon = '⚔️';
+                if (item.type === 'armor') icon = '🛡️';
+                else if (item.type === 'potions') icon = '🧪';
+                else if (item.type === 'special') icon = '💎';
+
+                slot.innerHTML = `
+                    <div class="item-icon-text">${icon}</div>
+                    <div class="item-name-text">${item.name}</div>
+                    <div class="item-value-text">${item.value}g</div>
+                `;
+
+                // Add hover tooltip
+                slot.addEventListener('mouseenter', (e) => showTooltip(item, e));
+                slot.addEventListener('mouseleave', hideTooltip);
+
+                // Click to sell
+                slot.addEventListener('click', () => {
+                    sellSingleItem(index);
+                });
+
+                gridPanel.appendChild(slot);
+            });
+        }
+
+        function showTooltip(item, event) {
+            const tooltip = document.getElementById('itemTooltip');
+            document.getElementById('tooltipName').textContent = item.name;
+            document.getElementById('tooltipName').style.color = '#' + rarityMultipliers[item.rarity].color.toString(16).padStart(6, '0');
+            document.getElementById('tooltipType').textContent = `${rarityMultipliers[item.rarity].name || item.rarity} ${item.type}`;
+            document.getElementById('tooltipValue').textContent = `Value: ${item.value} gold`;
+
+            tooltip.style.left = (event.clientX + 15) + 'px';
+            tooltip.style.top = (event.clientY + 15) + 'px';
+            tooltip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            document.getElementById('itemTooltip').classList.remove('show');
+        }
+
+        function toggleInventoryPanel() {
+            const panel = document.getElementById('inventoryPanel');
+            panel.classList.toggle('hidden');
+            if (!panel.classList.contains('hidden')) {
+                updateInventoryPanel();
+            }
+        }
+
+        function sellSingleItem(index) {
+            if (index >= 0 && index < gameState.inventory.length) {
+                const item = gameState.inventory[index];
+                gameState.gold += item.value;
+                gameState.inventory.splice(index, 1);
+                updateHUD();
+                updateInventoryPanel();
+                showMessage(`Sold ${item.name} for ${item.value} gold!`, '#00ff00');
+            }
         }
 
         // Mobile Controls Setup
@@ -1168,7 +1718,16 @@
             // Animate floating items
             floatingItems.forEach(itemMesh => {
                 itemMesh.rotation.y += itemMesh.userData.rotationSpeed;
-                itemMesh.position.y += Math.sin(Date.now() * 0.001 + itemMesh.userData.floatOffset) * itemMesh.userData.floatSpeed;
+                const floatAmount = Math.sin(Date.now() * 0.001 + itemMesh.userData.floatOffset) * 0.1;
+                itemMesh.position.y = itemMesh.userData.initialY + floatAmount;
+            });
+
+            // Animate chest runes (legendary chests)
+            chestObjects.forEach(chest => {
+                if (chest.userData.rune) {
+                    chest.userData.rune.rotation.z += 0.01;
+                    chest.userData.rune.position.y = -0.8 + Math.sin(Date.now() * 0.002) * 0.1;
+                }
             });
 
             renderer.render(scene, camera);
