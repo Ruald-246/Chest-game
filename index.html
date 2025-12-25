@@ -429,6 +429,159 @@
             font-weight: bold;
         }
 
+        /* Chest Prompt */
+        .chest-prompt {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px 40px;
+            border-radius: 15px;
+            border: 3px solid #ffd700;
+            z-index: 150;
+            text-align: center;
+            font-size: 20px;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .chest-prompt.show {
+            display: block;
+            animation: bounceIn 0.3s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+            60% { transform: translateX(-50%) scale(1.1); }
+            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+
+        .prompt-title {
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .prompt-cost {
+            font-size: 24px;
+            color: #ffd700;
+        }
+
+        /* Upgrades Shop */
+        .upgrades-shop {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px;
+            z-index: 200;
+            display: none;
+            backdrop-filter: blur(15px);
+        }
+
+        .upgrades-shop.show {
+            display: block;
+        }
+
+        .upgrades-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .upgrades-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .upgrade-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .upgrade-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .upgrade-desc {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        .upgrade-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .upgrade-level {
+            font-size: 16px;
+            color: #aaa;
+        }
+
+        .upgrade-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8000);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .upgrade-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .upgrade-btn:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .shop-toggle {
+            position: fixed;
+            top: 200px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 101;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+
+        .shop-toggle:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .hud {
@@ -503,6 +656,27 @@
         <span class="badge" id="inventoryCount">0</span>
     </div>
 
+    <!-- Shop Toggle Button -->
+    <div class="shop-toggle" id="shopToggle">
+        🛒
+    </div>
+
+    <!-- Chest Prompt -->
+    <div class="chest-prompt" id="chestPrompt">
+        <div class="prompt-title" id="promptTitle">Wooden Chest</div>
+        <div class="prompt-cost">💰 <span id="promptCost">10</span> Gold</div>
+        <div style="margin-top: 10px; font-size: 16px; color: #aaa;">Click to open</div>
+    </div>
+
+    <!-- Upgrades Shop -->
+    <div class="upgrades-shop" id="upgradesShop">
+        <div class="upgrades-header">
+            <div class="upgrades-title">⚡ Upgrades</div>
+            <button class="inventory-close" id="shopClose">✕</button>
+        </div>
+        <div id="upgradesGrid"></div>
+    </div>
+
     <!-- Inventory Panel -->
     <div class="inventory-panel hidden" id="inventoryPanel">
         <div class="inventory-header">
@@ -521,8 +695,8 @@
 
     <!-- Instructions -->
     <div class="instructions">
-        <p><strong>WASD</strong> - Move | <strong>Mouse</strong> - Look | <strong>Click</strong> - Open Chest</p>
-        <p><strong>Q</strong> - Sell All Items | <strong>I</strong> - Toggle Inventory</p>
+        <p><strong>WASD</strong> - Move | <strong>Shift</strong> - Sprint | <strong>Mouse</strong> - Look Around</p>
+        <p><strong>Click</strong> - Open Chest | <strong>I</strong> - Inventory | <strong>Q</strong> - Sell All</p>
     </div>
 
     <!-- Mobile Controls -->
@@ -630,10 +804,17 @@
         let chestObjects = [];
         let particles = [];
         let floatingItems = [];
-        let controls = { forward: false, backward: false, left: false, right: false };
+        let controls = { forward: false, backward: false, left: false, right: false, sprint: false };
         let velocity = new THREE.Vector3();
-        let moveSpeed = 0.1;
+        let moveSpeed = 0.15; // Increased from 0.1
+        let sprintMultiplier = 2.0;
         let selectedChest = null;
+        let nearbyChest = null;
+
+        // Camera smoothing
+        let targetRotation = { x: 0, y: 0 };
+        let currentRotation = { x: 0, y: 0 };
+        const rotationSmoothing = 0.1;
 
         // Mobile Detection
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -645,6 +826,13 @@
         let lastTouchY = 0;
         let touchStartX = 0;
         let touchStartY = 0;
+
+        // Upgrades system
+        const upgrades = {
+            dropRate: { level: 0, cost: 500, maxLevel: 5 },
+            sellBonus: { level: 0, cost: 1000, maxLevel: 5 },
+            moveSpeed: { level: 0, cost: 750, maxLevel: 3 }
+        };
 
         // Initialize Three.js
         function init() {
@@ -706,27 +894,18 @@
                 canvas.addEventListener('touchmove', onTouchMove);
                 canvas.addEventListener('touchend', onTouchEnd);
             } else {
-                // Desktop controls
+                // Desktop controls - NO POINTER LOCK, smooth camera
                 document.addEventListener('click', onMouseClick);
-                document.addEventListener('mousemove', onMouseMove);
-
-                // Pointer Lock for first-person controls
-                canvas.addEventListener('click', () => {
-                    canvas.requestPointerLock();
-                });
-
-                document.addEventListener('pointerlockchange', () => {
-                    if (document.pointerLockElement === canvas) {
-                        document.addEventListener('mousemove', onPointerMove);
-                    } else {
-                        document.removeEventListener('mousemove', onPointerMove);
-                    }
-                });
+                document.addEventListener('mousemove', onMouseMoveSmooth);
             }
 
             // Inventory event listeners
             document.getElementById('inventoryToggle').addEventListener('click', toggleInventoryPanel);
             document.getElementById('inventoryClose').addEventListener('click', toggleInventoryPanel);
+
+            // Shop event listeners
+            document.getElementById('shopToggle').addEventListener('click', toggleShop);
+            document.getElementById('shopClose').addEventListener('click', toggleShop);
 
             // Start Animation Loop
             animate();
@@ -982,11 +1161,20 @@
                 chestType.position.z
             );
 
+            // Rotate chest to face center (player spawn)
+            const angleToCenter = Math.atan2(
+                -chestType.position.z,
+                -chestType.position.x
+            );
+            chestGroup.rotation.y = angleToCenter;
+
             // Store references for opening animation
             chestGroup.userData.lid = lid;
             chestGroup.userData.lock = lockGroup;
             chestGroup.userData.isOpening = false;
             chestGroup.userData.isOpen = false;
+            chestGroup.userData.chestType = chestType;
+            chestGroup.userData.respawnTime = 0;
 
             return chestGroup;
         }
@@ -1035,8 +1223,15 @@
             gameState.chestsOpened++;
             chest.userData.isOpening = true;
 
+            // Set respawn timer (30-60 seconds)
+            const respawnDelay = (30 + Math.random() * 30) * 1000;
+            chest.userData.respawnTime = Date.now() + respawnDelay;
+
             // Opening animation
             animateChestOpening(chest, chestType);
+
+            // Play sound effect (placeholder - will add actual sounds)
+            playSound('chestOpen');
 
             // Update UI
             updateHUD();
@@ -1168,6 +1363,7 @@
                 });
                 floatingItems = [];
                 showMessage(`Collected ${itemCount} items! ✨`, '#00ff00');
+                playSound('collect');
                 updateHUD();
                 updateInventoryPanel();
             }, items.length * 200 + 1500); // Wait for all items to spawn + 1.5s display time
@@ -1395,11 +1591,13 @@
                 return;
             }
 
-            const totalValue = gameState.inventory.reduce((sum, item) => sum + item.value, 0);
+            const baseValue = gameState.inventory.reduce((sum, item) => sum + item.value, 0);
+            const totalValue = Math.floor(baseValue * (1 + upgrades.sellBonus.level * 0.1));
             gameState.gold += totalValue;
             gameState.inventory = [];
 
             showMessage(`Sold all items for ${totalValue} gold! 💰`, '#00ff00');
+            playSound('sell');
             updateHUD();
             updateInventoryPanel();
         }
@@ -1488,11 +1686,83 @@
         function sellSingleItem(index) {
             if (index >= 0 && index < gameState.inventory.length) {
                 const item = gameState.inventory[index];
-                gameState.gold += item.value;
+                const sellValue = Math.floor(item.value * (1 + upgrades.sellBonus.level * 0.1));
+                gameState.gold += sellValue;
                 gameState.inventory.splice(index, 1);
                 updateHUD();
                 updateInventoryPanel();
-                showMessage(`Sold ${item.name} for ${item.value} gold!`, '#00ff00');
+                showMessage(`Sold ${item.name} for ${sellValue} gold!`, '#00ff00');
+                playSound('sell');
+            }
+        }
+
+        // Upgrades Shop
+        function toggleShop() {
+            const shop = document.getElementById('upgradesShop');
+            shop.classList.toggle('show');
+            if (!shop.classList.contains('show')) return;
+
+            // Update shop UI
+            const grid = document.getElementById('upgradesGrid');
+            grid.innerHTML = '';
+
+            const upgradesList = [
+                {
+                    key: 'dropRate',
+                    name: 'Better Loot',
+                    desc: 'Increase rarity of drops from chests',
+                    icon: '✨'
+                },
+                {
+                    key: 'sellBonus',
+                    name: 'Bargaining',
+                    desc: '+10% gold when selling items per level',
+                    icon: '💰'
+                },
+                {
+                    key: 'moveSpeed',
+                    name: 'Swift Steps',
+                    desc: '+20% movement speed per level',
+                    icon: '👟'
+                }
+            ];
+
+            upgradesList.forEach(upgrade => {
+                const data = upgrades[upgrade.key];
+                const cost = Math.floor(data.cost * Math.pow(1.5, data.level));
+                const isMaxed = data.level >= data.maxLevel;
+                const canAfford = gameState.gold >= cost;
+
+                const div = document.createElement('div');
+                div.className = 'upgrade-item';
+                div.innerHTML = `
+                    <div class="upgrade-name">${upgrade.icon} ${upgrade.name}</div>
+                    <div class="upgrade-desc">${upgrade.desc}</div>
+                    <div class="upgrade-footer">
+                        <div class="upgrade-level">Level: ${data.level}/${data.maxLevel}</div>
+                        <button class="upgrade-btn" id="upgrade-${upgrade.key}" ${isMaxed || !canAfford ? 'disabled' : ''}>
+                            ${isMaxed ? 'Maxed!' : `${cost} Gold`}
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(div);
+
+                if (!isMaxed && canAfford) {
+                    document.getElementById(`upgrade-${upgrade.key}`).addEventListener('click', () => {
+                        purchaseUpgrade(upgrade.key, cost);
+                    });
+                }
+            });
+        }
+
+        function purchaseUpgrade(key, cost) {
+            if (gameState.gold >= cost && upgrades[key].level < upgrades[key].maxLevel) {
+                gameState.gold -= cost;
+                upgrades[key].level++;
+                updateHUD();
+                toggleShop(); // Refresh shop UI
+                showMessage('Upgrade purchased!', '#00ff00');
+                playSound('collect');
             }
         }
 
@@ -1626,6 +1896,8 @@
                 case 'KeyS': controls.backward = true; break;
                 case 'KeyA': controls.left = true; break;
                 case 'KeyD': controls.right = true; break;
+                case 'ShiftLeft':
+                case 'ShiftRight': controls.sprint = true; break;
                 case 'KeyQ': sellAllItems(); break;
                 case 'KeyI': toggleInventoryPanel(); break;
             }
@@ -1637,30 +1909,31 @@
                 case 'KeyS': controls.backward = false; break;
                 case 'KeyA': controls.left = false; break;
                 case 'KeyD': controls.right = false; break;
+                case 'ShiftLeft':
+                case 'ShiftRight': controls.sprint = false; break;
             }
         }
 
-        function onMouseMove(event) {
-            // Update raycaster for hover detection
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-        }
+        function onMouseMoveSmooth(event) {
+            // Smooth camera rotation without pointer lock
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
 
-        function onPointerMove(event) {
-            // First-person camera rotation
-            const movementX = event.movementX || 0;
-            const movementY = event.movementY || 0;
+            const deltaX = event.clientX - centerX;
+            const deltaY = event.clientY - centerY;
 
-            camera.rotation.y -= movementX * 0.002;
-            camera.rotation.x -= movementY * 0.002;
+            // Update target rotation based on mouse position
+            targetRotation.y = -(deltaX / window.innerWidth) * Math.PI;
+            targetRotation.x = -(deltaY / window.innerHeight) * Math.PI * 0.5;
 
             // Limit vertical rotation
-            camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
+            targetRotation.x = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, targetRotation.x));
         }
 
         function onMouseClick() {
-            if (selectedChest) {
-                openChest(selectedChest);
+            // Check if clicking on a nearby chest
+            if (nearbyChest && !nearbyChest.userData.isOpening) {
+                openChest(nearbyChest);
             }
         }
 
@@ -1674,21 +1947,64 @@
         function animate() {
             requestAnimationFrame(animate);
 
+            // Apply smooth camera rotation
+            if (!isMobile) {
+                currentRotation.x += (targetRotation.x - currentRotation.x) * rotationSmoothing;
+                currentRotation.y += (targetRotation.y - currentRotation.y) * rotationSmoothing;
+                camera.rotation.x = currentRotation.x;
+                camera.rotation.y = currentRotation.y;
+            }
+
             // Update movement
             updateMovement();
 
-            // Update raycaster
-            raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); // Center of screen
-            const intersects = raycaster.intersectObjects(chestObjects, true);
+            // Check for nearby chests
+            nearbyChest = null;
+            let closestDist = 5; // Detection radius
+            chestObjects.forEach(chest => {
+                if (chest.userData.isOpen) return;
 
-            if (intersects.length > 0) {
-                const intersectedChest = intersects[0].object.parent;
-                selectedChest = intersectedChest;
+                const dist = camera.position.distanceTo(chest.position);
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    nearbyChest = chest;
+                }
+            });
+
+            // Update crosshair and chest prompt
+            const promptEl = document.getElementById('chestPrompt');
+            if (nearbyChest) {
                 document.getElementById('crosshair').classList.add('active');
+                // Show chest prompt
+                document.getElementById('promptTitle').textContent = nearbyChest.userData.chestType.name;
+                document.getElementById('promptCost').textContent = nearbyChest.userData.chestType.cost;
+                promptEl.classList.add('show');
             } else {
-                selectedChest = null;
                 document.getElementById('crosshair').classList.remove('active');
+                promptEl.classList.remove('show');
             }
+
+            // Check for chest respawns
+            const currentTime = Date.now();
+            chestObjects.forEach(chest => {
+                if (chest.userData.isOpen && chest.userData.respawnTime > 0 && currentTime >= chest.userData.respawnTime) {
+                    // Respawn chest
+                    chest.userData.isOpen = false;
+                    chest.userData.isOpening = false;
+                    chest.userData.respawnTime = 0;
+
+                    // Reset lid
+                    chest.userData.lid.rotation.x = 0;
+                    chest.userData.lid.position.z = 0;
+                    chest.userData.lid.position.y = 0.9;
+
+                    // Reset lock
+                    chest.userData.lock.scale.set(1, 1, 1);
+
+                    // Show respawn effect
+                    createLightExplosion(chest.position, chest.userData.chestType.emissive);
+                }
+            });
 
             // Animate particles
             particles.forEach(({ system, chest }) => {
@@ -1750,7 +2066,11 @@
             }
 
             if (velocity.length() > 0) {
-                velocity.normalize().multiplyScalar(moveSpeed);
+                // Apply sprint multiplier
+                const currentSpeed = moveSpeed * (controls.sprint ? sprintMultiplier : 1);
+                // Apply move speed upgrade
+                const upgradeBonus = 1 + (upgrades.moveSpeed.level * 0.2);
+                velocity.normalize().multiplyScalar(currentSpeed * upgradeBonus);
             }
             camera.position.add(velocity);
 
@@ -1762,6 +2082,39 @@
             if (distFromCenter > 28) {
                 camera.position.x = (camera.position.x / distFromCenter) * 28;
                 camera.position.z = (camera.position.z / distFromCenter) * 28;
+            }
+        }
+
+        // Sound system (placeholder - uses Web Audio API)
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const sounds = {};
+
+        function playSound(type) {
+            // Placeholder sound using oscillator
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (type === 'chestOpen') {
+                oscillator.frequency.value = 523.25; // C5
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } else if (type === 'collect') {
+                oscillator.frequency.value = 659.25; // E5
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.15);
+            } else if (type === 'sell') {
+                oscillator.frequency.value = 783.99; // G5
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
             }
         }
 
