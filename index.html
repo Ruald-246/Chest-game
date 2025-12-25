@@ -3,814 +3,925 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mystic Chest Hunter</title>
+    <title>Mystic Chest Hunter 3D</title>
     <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    min-height: 100vh;
-    padding: 20px;
-    color: #fff;
-}
-
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-header {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-header h1 {
-    font-size: 2.5em;
-    margin-bottom: 15px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.stats {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    flex-wrap: wrap;
-}
-
-.stat-item {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 1.2em;
-}
-
-.stat-value {
-    font-weight: bold;
-    color: #ffd700;
-}
-
-.game-area {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-@media (max-width: 968px) {
-    .game-area {
-        grid-template-columns: 1fr;
-    }
-}
-
-.chest-shop {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-.chest-shop h2 {
-    margin-bottom: 15px;
-    font-size: 1.8em;
-}
-
-.chest-grid {
-    display: grid;
-    gap: 15px;
-}
-
-.chest-card {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.chest-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-}
-
-.chest-card.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.chest-card.disabled:hover {
-    transform: none;
-}
-
-.chest-info {
-    flex: 1;
-}
-
-.chest-name {
-    font-size: 1.3em;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.chest-price {
-    color: #ffd700;
-    font-size: 1.1em;
-}
-
-.chest-chance {
-    font-size: 0.9em;
-    color: #ccc;
-    margin-top: 5px;
-}
-
-.chest-icon {
-    font-size: 3em;
-}
-
-.chest-card[data-rarity="common"] { border-color: #9d9d9d; }
-.chest-card[data-rarity="uncommon"] { border-color: #1eff00; }
-.chest-card[data-rarity="rare"] { border-color: #0070dd; }
-.chest-card[data-rarity="epic"] { border-color: #a335ee; }
-.chest-card[data-rarity="legendary"] { border-color: #ff8000; }
-
-.opening-area {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    min-height: 400px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.opening-area h2 {
-    margin-bottom: 20px;
-    font-size: 1.8em;
-}
-
-.opening-area.hidden {
-    display: none;
-}
-
-.chest-animation {
-    font-size: 8em;
-    margin: 20px 0;
-    animation: shake 0.5s infinite;
-}
-
-@keyframes shake {
-    0%, 100% { transform: rotate(-5deg); }
-    50% { transform: rotate(5deg); }
-}
-
-.chest-animation.opening {
-    animation: openChest 1s ease-out forwards;
-}
-
-@keyframes openChest {
-    0% { transform: scale(1) rotate(0deg); }
-    50% { transform: scale(1.2) rotate(10deg); }
-    100% { transform: scale(0.8) rotate(0deg); opacity: 0; }
-}
-
-.reward-display {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.reward-item {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    border-radius: 10px;
-    min-width: 150px;
-    text-align: center;
-    border: 2px solid;
-    animation: popIn 0.5s ease-out;
-}
-
-@keyframes popIn {
-    0% { transform: scale(0); opacity: 0; }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-.reward-item .item-icon {
-    font-size: 2.5em;
-    margin-bottom: 10px;
-}
-
-.reward-item .item-name {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.reward-item .item-value {
-    color: #ffd700;
-}
-
-.inventory {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    margin-bottom: 20px;
-}
-
-.inventory-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.inventory-controls {
-    display: flex;
-    gap: 10px;
-}
-
-.inventory-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-}
-
-.inventory-item {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    border-radius: 10px;
-    text-align: center;
-    border: 2px solid;
-    position: relative;
-    transition: transform 0.2s ease;
-}
-
-.inventory-item:hover {
-    transform: scale(1.05);
-}
-
-.inventory-item .item-icon {
-    font-size: 2em;
-    margin-bottom: 10px;
-}
-
-.inventory-item .item-name {
-    font-size: 0.9em;
-    margin-bottom: 5px;
-}
-
-.inventory-item .item-type {
-    font-size: 0.8em;
-    color: #ccc;
-    margin-bottom: 5px;
-}
-
-.inventory-item .item-value {
-    color: #ffd700;
-    font-weight: bold;
-}
-
-.sell-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: #ff4444;
-    border: none;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.8em;
-    transition: background 0.2s ease;
-}
-
-.sell-btn:hover {
-    background: #cc0000;
-}
-
-.empty-message {
-    grid-column: 1 / -1;
-    text-align: center;
-    color: #aaa;
-    padding: 40px;
-    font-size: 1.1em;
-}
-
-.rarity-common { border-color: #9d9d9d; }
-.rarity-uncommon { border-color: #1eff00; }
-.rarity-rare { border-color: #0070dd; }
-.rarity-epic { border-color: #a335ee; }
-.rarity-legendary { border-color: #ff8000; }
-.rarity-mythic { border-color: #e6cc80; box-shadow: 0 0 20px #e6cc80; }
-
-.achievements {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    margin-bottom: 20px;
-}
-
-.achievement-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.achievement-card {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    border-radius: 10px;
-    text-align: center;
-    border: 2px solid #555;
-    transition: all 0.3s ease;
-}
-
-.achievement-card.unlocked {
-    border-color: #ffd700;
-    background: rgba(255, 215, 0, 0.2);
-}
-
-.achievement-icon {
-    font-size: 2em;
-    margin-bottom: 10px;
-}
-
-.achievement-name {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.achievement-desc {
-    font-size: 0.9em;
-    color: #ccc;
-}
-
-.collection {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-.collection-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
-}
-
-.collection-category {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    border-radius: 10px;
-}
-
-.category-name {
-    font-size: 1.2em;
-    margin-bottom: 10px;
-    font-weight: bold;
-}
-
-.progress-bar {
-    background: rgba(0, 0, 0, 0.3);
-    height: 20px;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 10px;
-}
-
-.progress-fill {
-    background: linear-gradient(90deg, #4CAF50, #8BC34A);
-    height: 100%;
-    transition: width 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8em;
-}
-
-.btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: all 0.2s ease;
-    font-weight: bold;
-}
-
-.btn-secondary {
-    background: #6c757d;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background: #5a6268;
-}
-
-.btn-danger {
-    background: #dc3545;
-    color: white;
-}
-
-.btn-danger:hover {
-    background: #c82333;
-}
-
-@keyframes glow {
-    0%, 100% { box-shadow: 0 0 5px currentColor; }
-    50% { box-shadow: 0 0 20px currentColor; }
-}
-
-.legendary-glow {
-    animation: glow 2s infinite;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #000;
+            color: #fff;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* HUD Overlay */
+        .hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            backdrop-filter: blur(10px);
+            font-size: 18px;
+            pointer-events: none;
+        }
+
+        .hud-item {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hud-value {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        /* Crosshair */
+        .crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99;
+            transition: all 0.2s;
+        }
+
+        .crosshair.active {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px #ffd700;
+            width: 30px;
+            height: 30px;
+        }
+
+        /* Instructions */
+        .instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            z-index: 100;
+            text-align: center;
+        }
+
+        .instructions p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        /* Message Display */
+        .message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px 50px;
+            border-radius: 20px;
+            border: 3px solid #ffd700;
+            z-index: 200;
+            font-size: 24px;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .message.show {
+            opacity: 1;
+        }
+
+        /* Loading Screen */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ffd700, #ff8000, #a335ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .loading-bar {
+            width: 300px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ff8000);
+            width: 0%;
+            transition: width 0.3s;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>⚔️ Mystic Chest Hunter ⚔️</h1>
-            <div class="stats">
-                <div class="stat-item">
-                    <span class="stat-label">💰 Gold:</span>
-                    <span class="stat-value" id="gold">100</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">📦 Chests Opened:</span>
-                    <span class="stat-value" id="chestsOpened">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">⭐ Total Value:</span>
-                    <span class="stat-value" id="totalValue">0</span>
-                </div>
-            </div>
-        </header>
-
-        <div class="game-area">
-            <section class="chest-shop">
-                <h2>🏪 Chest Shop</h2>
-                <div class="chest-grid" id="chestGrid"></div>
-            </section>
-
-            <section class="opening-area" id="openingArea">
-                <h2>✨ Opening Chest...</h2>
-                <div class="chest-animation" id="chestAnimation"></div>
-                <div class="reward-display" id="rewardDisplay"></div>
-            </section>
+    <!-- Loading Screen -->
+    <div class="loading" id="loading">
+        <h1>✨ Mystic Chest Hunter 3D ✨</h1>
+        <div class="loading-bar">
+            <div class="loading-progress" id="loadingProgress"></div>
         </div>
-
-        <section class="inventory">
-            <div class="inventory-header">
-                <h2>🎒 Inventory</h2>
-                <div class="inventory-controls">
-                    <button class="btn btn-secondary" id="sortBtn">Sort by Value</button>
-                    <button class="btn btn-danger" id="sellAllBtn">Sell All</button>
-                </div>
-            </div>
-            <div class="inventory-grid" id="inventoryGrid">
-                <p class="empty-message">Your inventory is empty. Open some chests!</p>
-            </div>
-        </section>
-
-        <section class="achievements">
-            <h2>🏆 Achievements</h2>
-            <div class="achievement-grid" id="achievementGrid"></div>
-        </section>
-
-        <section class="collection">
-            <h2>📚 Collection</h2>
-            <div class="collection-stats" id="collectionStats"></div>
-        </section>
+        <p style="margin-top: 20px; color: #ccc;">Loading magical realm...</p>
     </div>
 
+    <!-- HUD -->
+    <div class="hud">
+        <div class="hud-item">
+            <span>💰 Gold:</span>
+            <span class="hud-value" id="goldDisplay">100</span>
+        </div>
+        <div class="hud-item">
+            <span>📦 Opened:</span>
+            <span class="hud-value" id="chestsDisplay">0</span>
+        </div>
+        <div class="hud-item">
+            <span>⭐ Value:</span>
+            <span class="hud-value" id="valueDisplay">0</span>
+        </div>
+    </div>
+
+    <!-- Crosshair -->
+    <div class="crosshair" id="crosshair"></div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+        <p><strong>WASD</strong> - Move | <strong>Mouse</strong> - Look | <strong>Click</strong> - Open Chest</p>
+        <p><strong>E</strong> - Collect Items | <strong>Q</strong> - Sell All</p>
+    </div>
+
+    <!-- Message Display -->
+    <div class="message" id="message"></div>
+
+    <!-- Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <script>
-const gameState = {
-    gold: 100,
-    chestsOpened: 0,
-    totalValue: 0,
-    inventory: [],
-    achievements: [],
-    collection: {
-        weapons: new Set(),
-        armor: new Set(),
-        potions: new Set(),
-        special: new Set()
-    }
-};
-
-const chestTypes = [
-    { name: 'Wooden Chest', rarity: 'common', cost: 10, icon: '📦', itemCount: { min: 1, max: 2 }, rarityWeights: { common: 70, uncommon: 25, rare: 4, epic: 1, legendary: 0, mythic: 0 } },
-    { name: 'Bronze Chest', rarity: 'uncommon', cost: 50, icon: '🎁', itemCount: { min: 2, max: 3 }, rarityWeights: { common: 40, uncommon: 40, rare: 15, epic: 4, legendary: 1, mythic: 0 } },
-    { name: 'Silver Chest', rarity: 'rare', cost: 200, icon: '💎', itemCount: { min: 3, max: 4 }, rarityWeights: { common: 20, uncommon: 35, rare: 30, epic: 12, legendary: 3, mythic: 0 } },
-    { name: 'Golden Chest', rarity: 'epic', cost: 1000, icon: '👑', itemCount: { min: 4, max: 5 }, rarityWeights: { common: 5, uncommon: 20, rare: 35, epic: 30, legendary: 9, mythic: 1 } },
-    { name: 'Diamond Chest', rarity: 'legendary', cost: 5000, icon: '✨', itemCount: { min: 5, max: 7 }, rarityWeights: { common: 0, uncommon: 10, rare: 25, epic: 35, legendary: 25, mythic: 5 } }
-];
-
-const itemTemplates = {
-    weapons: { icon: '⚔️', names: ['Sword', 'Bow', 'Staff', 'Dagger', 'Axe', 'Hammer', 'Spear', 'Crossbow', 'Wand', 'Katana'], prefixes: ['Rusty', 'Sharp', 'Blessed', 'Cursed', 'Ancient', 'Mystic', 'Dragon', 'Phoenix', 'Shadow', 'Light'], baseValue: 20 },
-    armor: { icon: '🛡️', names: ['Helmet', 'Chestplate', 'Boots', 'Gauntlets', 'Leggings', 'Shield', 'Pauldrons', 'Bracers'], prefixes: ['Leather', 'Iron', 'Steel', 'Mithril', 'Dragon', 'Divine', 'Demon', 'Crystal', 'Obsidian'], baseValue: 25 },
-    potions: { icon: '🧪', names: ['Health Potion', 'Mana Potion', 'Strength Potion', 'Speed Potion', 'Defense Potion', 'Luck Potion'], prefixes: ['Minor', 'Lesser', 'Greater', 'Superior', 'Supreme', 'Ultimate'], baseValue: 15 },
-    special: { icon: '🌟', names: ['Pet', 'Mount', 'Artifact', 'Relic', 'Gem', 'Crown', 'Ring', 'Amulet', 'Orb', 'Scroll'], prefixes: ['Rare', 'Exotic', 'Legendary', 'Mythical', 'Celestial', 'Infernal', 'Ethereal', 'Prismatic'], baseValue: 50 }
-};
-
-const rarityMultipliers = {
-    common: { multiplier: 1, color: '#9d9d9d', name: 'Common' },
-    uncommon: { multiplier: 2, color: '#1eff00', name: 'Uncommon' },
-    rare: { multiplier: 5, color: '#0070dd', name: 'Rare' },
-    epic: { multiplier: 10, color: '#a335ee', name: 'Epic' },
-    legendary: { multiplier: 25, color: '#ff8000', name: 'Legendary' },
-    mythic: { multiplier: 100, color: '#e6cc80', name: 'Mythic' }
-};
-
-const achievementsList = [
-    { id: 'first_chest', name: 'First Steps', desc: 'Open your first chest', icon: '🎉', check: (state) => state.chestsOpened >= 1 },
-    { id: 'chest_10', name: 'Enthusiast', desc: 'Open 10 chests', icon: '📦', check: (state) => state.chestsOpened >= 10 },
-    { id: 'chest_50', name: 'Collector', desc: 'Open 50 chests', icon: '🎁', check: (state) => state.chestsOpened >= 50 },
-    { id: 'chest_100', name: 'Master Hunter', desc: 'Open 100 chests', icon: '👑', check: (state) => state.chestsOpened >= 100 },
-    { id: 'rich', name: 'Wealthy', desc: 'Accumulate 10,000 gold', icon: '💰', check: (state) => state.gold >= 10000 },
-    { id: 'legendary_find', name: 'Legendary Find', desc: 'Find a Legendary item', icon: '⭐', check: (state) => state.inventory.some(item => item.rarity === 'legendary') },
-    { id: 'mythic_find', name: 'Mythic Discovery', desc: 'Find a Mythic item', icon: '✨', check: (state) => state.inventory.some(item => item.rarity === 'mythic') },
-    { id: 'full_weapon', name: 'Arsenal', desc: 'Collect 10 different weapons', icon: '⚔️', check: (state) => state.collection.weapons.size >= 10 },
-    { id: 'value_100k', name: 'Fortune', desc: 'Earn 100,000 total value', icon: '💎', check: (state) => state.totalValue >= 100000 }
-];
-
-function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function weightedRandom(weights) {
-    const total = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
-    let random = Math.random() * total;
-    for (const [key, weight] of Object.entries(weights)) {
-        random -= weight;
-        if (random <= 0) return key;
-    }
-    return Object.keys(weights)[0];
-}
-
-function generateItem(chestRarity) {
-    const typeKeys = Object.keys(itemTemplates);
-    const type = typeKeys[randomInt(0, typeKeys.length - 1)];
-    const template = itemTemplates[type];
-    const rarityWeights = chestTypes.find(c => c.rarity === chestRarity).rarityWeights;
-    const itemRarity = weightedRandom(rarityWeights);
-    const prefix = template.prefixes[randomInt(0, template.prefixes.length - 1)];
-    const name = template.names[randomInt(0, template.names.length - 1)];
-    const rarityInfo = rarityMultipliers[itemRarity];
-    const value = Math.floor(template.baseValue * rarityInfo.multiplier * (0.8 + Math.random() * 0.4));
-    return {
-        id: Date.now() + Math.random(),
-        type: type,
-        name: `${prefix} ${name}`,
-        rarity: itemRarity,
-        rarityName: rarityInfo.name,
-        icon: template.icon,
-        value: value,
-        color: rarityInfo.color
-    };
-}
-
-function openChest(chest) {
-    if (gameState.gold < chest.cost) {
-        alert('Not enough gold!');
-        return;
-    }
-    gameState.gold -= chest.cost;
-    gameState.chestsOpened++;
-    const itemCount = randomInt(chest.itemCount.min, chest.itemCount.max);
-    const items = [];
-    for (let i = 0; i < itemCount; i++) {
-        items.push(generateItem(chest.rarity));
-    }
-    items.forEach(item => {
-        gameState.inventory.push(item);
-        gameState.totalValue += item.value;
-        gameState.collection[item.type].add(item.name);
-    });
-    showChestOpening(chest, items);
-    updateUI();
-    checkAchievements();
-    saveGame();
-}
-
-function showChestOpening(chest, items) {
-    const openingArea = document.getElementById('openingArea');
-    const chestAnimation = document.getElementById('chestAnimation');
-    const rewardDisplay = document.getElementById('rewardDisplay');
-    openingArea.classList.remove('hidden');
-    chestAnimation.innerHTML = chest.icon;
-    chestAnimation.classList.add('opening');
-    rewardDisplay.innerHTML = '';
-    setTimeout(() => {
-        chestAnimation.classList.remove('opening');
-        items.forEach((item, index) => {
-            setTimeout(() => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = `reward-item rarity-${item.rarity}`;
-                itemDiv.innerHTML = `
-                    <div class="item-icon">${item.icon}</div>
-                    <div class="item-name">${item.name}</div>
-                    <div class="item-rarity">${item.rarityName}</div>
-                    <div class="item-value">${item.value} gold</div>
-                `;
-                rewardDisplay.appendChild(itemDiv);
-            }, index * 200);
-        });
-    }, 1000);
-}
-
-function sellItem(itemId) {
-    const itemIndex = gameState.inventory.findIndex(item => item.id === itemId);
-    if (itemIndex !== -1) {
-        const item = gameState.inventory[itemIndex];
-        gameState.gold += item.value;
-        gameState.inventory.splice(itemIndex, 1);
-        updateUI();
-        saveGame();
-    }
-}
-
-function sellAllItems() {
-    if (gameState.inventory.length === 0) {
-        alert('No items to sell!');
-        return;
-    }
-    const totalValue = gameState.inventory.reduce((sum, item) => sum + item.value, 0);
-    if (confirm(`Sell all ${gameState.inventory.length} items for ${totalValue} gold?`)) {
-        gameState.gold += totalValue;
-        gameState.inventory = [];
-        updateUI();
-        saveGame();
-    }
-}
-
-function sortInventory() {
-    gameState.inventory.sort((a, b) => b.value - a.value);
-    updateUI();
-}
-
-function checkAchievements() {
-    achievementsList.forEach(achievement => {
-        if (!gameState.achievements.includes(achievement.id) && achievement.check(gameState)) {
-            gameState.achievements.push(achievement.id);
-        }
-    });
-    updateAchievements();
-}
-
-function updateUI() {
-    document.getElementById('gold').textContent = gameState.gold.toLocaleString();
-    document.getElementById('chestsOpened').textContent = gameState.chestsOpened.toLocaleString();
-    document.getElementById('totalValue').textContent = gameState.totalValue.toLocaleString();
-    updateChestShop();
-    updateInventory();
-    updateCollection();
-}
-
-function updateChestShop() {
-    const chestGrid = document.getElementById('chestGrid');
-    chestGrid.innerHTML = '';
-    chestTypes.forEach(chest => {
-        const canAfford = gameState.gold >= chest.cost;
-        const chestDiv = document.createElement('div');
-        chestDiv.className = `chest-card ${canAfford ? '' : 'disabled'}`;
-        chestDiv.setAttribute('data-rarity', chest.rarity);
-        chestDiv.innerHTML = `
-            <div class="chest-info">
-                <div class="chest-name">${chest.name}</div>
-                <div class="chest-price">💰 ${chest.cost} gold</div>
-                <div class="chest-chance">${chest.itemCount.min}-${chest.itemCount.max} items</div>
-            </div>
-            <div class="chest-icon">${chest.icon}</div>
-        `;
-        if (canAfford) {
-            chestDiv.addEventListener('click', () => openChest(chest));
-        }
-        chestGrid.appendChild(chestDiv);
-    });
-}
-
-function updateInventory() {
-    const inventoryGrid = document.getElementById('inventoryGrid');
-    inventoryGrid.innerHTML = '';
-    if (gameState.inventory.length === 0) {
-        inventoryGrid.innerHTML = '<p class="empty-message">Your inventory is empty. Open some chests!</p>';
-        return;
-    }
-    gameState.inventory.forEach(item => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = `inventory-item rarity-${item.rarity}`;
-        itemDiv.innerHTML = `
-            <button class="sell-btn" onclick="sellItem(${item.id})">Sell</button>
-            <div class="item-icon">${item.icon}</div>
-            <div class="item-name">${item.name}</div>
-            <div class="item-type">${item.type}</div>
-            <div class="item-rarity">${item.rarityName}</div>
-            <div class="item-value">${item.value} 💰</div>
-        `;
-        inventoryGrid.appendChild(itemDiv);
-    });
-}
-
-function updateAchievements() {
-    const achievementGrid = document.getElementById('achievementGrid');
-    achievementGrid.innerHTML = '';
-    achievementsList.forEach(achievement => {
-        const unlocked = gameState.achievements.includes(achievement.id);
-        const achDiv = document.createElement('div');
-        achDiv.className = `achievement-card ${unlocked ? 'unlocked' : ''}`;
-        achDiv.innerHTML = `
-            <div class="achievement-icon">${achievement.icon}</div>
-            <div class="achievement-name">${achievement.name}</div>
-            <div class="achievement-desc">${achievement.desc}</div>
-        `;
-        achievementGrid.appendChild(achDiv);
-    });
-}
-
-function updateCollection() {
-    const collectionStats = document.getElementById('collectionStats');
-    collectionStats.innerHTML = '';
-    const categories = [
-        { key: 'weapons', name: 'Weapons', icon: '⚔️', total: itemTemplates.weapons.names.length * itemTemplates.weapons.prefixes.length },
-        { key: 'armor', name: 'Armor', icon: '🛡️', total: itemTemplates.armor.names.length * itemTemplates.armor.prefixes.length },
-        { key: 'potions', name: 'Potions', icon: '🧪', total: itemTemplates.potions.names.length * itemTemplates.potions.prefixes.length },
-        { key: 'special', name: 'Special', icon: '🌟', total: itemTemplates.special.names.length * itemTemplates.special.prefixes.length }
-    ];
-    categories.forEach(category => {
-        const collected = gameState.collection[category.key].size;
-        const percentage = Math.floor((collected / category.total) * 100);
-        const catDiv = document.createElement('div');
-        catDiv.className = 'collection-category';
-        catDiv.innerHTML = `
-            <div class="category-name">${category.icon} ${category.name}</div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: ${percentage}%">
-                    ${collected}/${category.total}
-                </div>
-            </div>
-        `;
-        collectionStats.appendChild(catDiv);
-    });
-}
-
-function saveGame() {
-    const saveData = {
-        ...gameState,
-        collection: {
-            weapons: Array.from(gameState.collection.weapons),
-            armor: Array.from(gameState.collection.armor),
-            potions: Array.from(gameState.collection.potions),
-            special: Array.from(gameState.collection.special)
-        }
-    };
-    localStorage.setItem('mysticChestHunter', JSON.stringify(saveData));
-}
-
-function loadGame() {
-    const saveData = localStorage.getItem('mysticChestHunter');
-    if (saveData) {
-        const data = JSON.parse(saveData);
-        gameState.gold = data.gold;
-        gameState.chestsOpened = data.chestsOpened;
-        gameState.totalValue = data.totalValue;
-        gameState.inventory = data.inventory;
-        gameState.achievements = data.achievements;
-        gameState.collection = {
-            weapons: new Set(data.collection.weapons),
-            armor: new Set(data.collection.armor),
-            potions: new Set(data.collection.potions),
-            special: new Set(data.collection.special)
+        // Game State
+        const gameState = {
+            gold: 100,
+            chestsOpened: 0,
+            totalValue: 0,
+            inventory: []
         };
-    }
-}
 
-document.getElementById('sortBtn').addEventListener('click', sortInventory);
-document.getElementById('sellAllBtn').addEventListener('click', sellAllItems);
-window.sellItem = sellItem;
+        // Chest Types with 3D Properties
+        const chestTypes = [
+            {
+                name: 'Wooden Chest',
+                rarity: 'common',
+                cost: 10,
+                color: 0x8B4513,
+                emissive: 0x000000,
+                emissiveIntensity: 0,
+                itemCount: { min: 1, max: 2 },
+                position: { x: -15, y: 0, z: -10 }
+            },
+            {
+                name: 'Bronze Chest',
+                rarity: 'uncommon',
+                cost: 50,
+                color: 0xCD7F32,
+                emissive: 0x00ff00,
+                emissiveIntensity: 0.2,
+                itemCount: { min: 2, max: 3 },
+                position: { x: -7.5, y: 0, z: -10 }
+            },
+            {
+                name: 'Silver Chest',
+                rarity: 'rare',
+                cost: 200,
+                color: 0xC0C0C0,
+                emissive: 0x0070dd,
+                emissiveIntensity: 0.3,
+                itemCount: { min: 3, max: 4 },
+                position: { x: 0, y: 0, z: -10 }
+            },
+            {
+                name: 'Golden Chest',
+                rarity: 'epic',
+                cost: 1000,
+                color: 0xFFD700,
+                emissive: 0xa335ee,
+                emissiveIntensity: 0.5,
+                itemCount: { min: 4, max: 5 },
+                position: { x: 7.5, y: 0, z: -10 }
+            },
+            {
+                name: 'Diamond Chest',
+                rarity: 'legendary',
+                cost: 5000,
+                color: 0x00FFFF,
+                emissive: 0xff8000,
+                emissiveIntensity: 0.8,
+                itemCount: { min: 5, max: 7 },
+                position: { x: 15, y: 0, z: -10 }
+            }
+        ];
 
-loadGame();
-updateUI();
-updateAchievements();
+        // Item Templates
+        const itemTemplates = {
+            weapons: { names: ['Sword', 'Bow', 'Staff', 'Dagger', 'Axe'], baseValue: 20, color: 0xff0000 },
+            armor: { names: ['Helmet', 'Chestplate', 'Boots', 'Shield'], baseValue: 25, color: 0x0000ff },
+            potions: { names: ['Health Potion', 'Mana Potion', 'Strength Potion'], baseValue: 15, color: 0x00ff00 },
+            special: { names: ['Gem', 'Crown', 'Ring', 'Artifact'], baseValue: 50, color: 0xffff00 }
+        };
+
+        const rarityMultipliers = {
+            common: { multiplier: 1, color: 0x9d9d9d },
+            uncommon: { multiplier: 2, color: 0x1eff00 },
+            rare: { multiplier: 5, color: 0x0070dd },
+            epic: { multiplier: 10, color: 0xa335ee },
+            legendary: { multiplier: 25, color: 0xff8000 }
+        };
+
+        // Three.js Setup
+        let scene, camera, renderer, raycaster, mouse;
+        let chestObjects = [];
+        let particles = [];
+        let floatingItems = [];
+        let controls = { forward: false, backward: false, left: false, right: false };
+        let velocity = new THREE.Vector3();
+        let moveSpeed = 0.1;
+        let selectedChest = null;
+
+        // Initialize Three.js
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000033, 0.02);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(0, 2, 10);
+
+            // Renderer
+            const canvas = document.getElementById('gameCanvas');
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // Raycaster for clicking
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // Lighting
+            createLighting();
+
+            // Environment
+            createEnvironment();
+
+            // Create Chests
+            createChests();
+
+            // Event Listeners
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+            document.addEventListener('click', onMouseClick);
+            document.addEventListener('mousemove', onMouseMove);
+
+            // Pointer Lock for first-person controls
+            canvas.addEventListener('click', () => {
+                canvas.requestPointerLock();
+            });
+
+            document.addEventListener('pointerlockchange', () => {
+                if (document.pointerLockElement === canvas) {
+                    document.addEventListener('mousemove', onPointerMove);
+                } else {
+                    document.removeEventListener('mousemove', onPointerMove);
+                }
+            });
+
+            // Start Animation Loop
+            animate();
+
+            // Hide loading screen
+            setTimeout(() => {
+                document.getElementById('loading').classList.add('hidden');
+            }, 1000);
+        }
+
+        function createLighting() {
+            // Ambient Light
+            const ambientLight = new THREE.AmbientLight(0x404060, 0.5);
+            scene.add(ambientLight);
+
+            // Directional Light (moonlight)
+            const directionalLight = new THREE.DirectionalLight(0x8888ff, 0.6);
+            directionalLight.position.set(10, 20, 10);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
+
+            // Point lights around chests
+            chestTypes.forEach(chestType => {
+                const pointLight = new THREE.PointLight(
+                    chestType.emissive || 0xffffff,
+                    chestType.emissiveIntensity * 3,
+                    15
+                );
+                pointLight.position.set(chestType.position.x, 3, chestType.position.z);
+                scene.add(pointLight);
+            });
+        }
+
+        function createEnvironment() {
+            // Mystical Void - Starfield
+            const starGeometry = new THREE.BufferGeometry();
+            const starCount = 5000;
+            const starPositions = new Float32Array(starCount * 3);
+
+            for (let i = 0; i < starCount * 3; i += 3) {
+                starPositions[i] = (Math.random() - 0.5) * 200;
+                starPositions[i + 1] = (Math.random() - 0.5) * 200;
+                starPositions[i + 2] = (Math.random() - 0.5) * 200;
+            }
+
+            starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+
+            const starMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.3,
+                transparent: true,
+                opacity: 0.8,
+                sizeAttenuation: true
+            });
+
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+
+            // Mystical Floor Platform
+            const platformGeometry = new THREE.CylinderGeometry(30, 30, 0.5, 32);
+            const platformMaterial = new THREE.MeshStandardMaterial({
+                color: 0x1a1a2e,
+                emissive: 0x16213e,
+                emissiveIntensity: 0.3,
+                roughness: 0.7,
+                metalness: 0.5
+            });
+            const platform = new THREE.Mesh(platformGeometry, platformMaterial);
+            platform.position.y = -0.25;
+            platform.receiveShadow = true;
+            scene.add(platform);
+
+            // Glowing Ring around platform
+            const ringGeometry = new THREE.TorusGeometry(30, 0.3, 16, 100);
+            const ringMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffd700,
+                emissive: 0xffd700,
+                emissiveIntensity: 1,
+                transparent: true,
+                opacity: 0.6
+            });
+            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+            ring.position.y = 0;
+            ring.rotation.x = Math.PI / 2;
+            scene.add(ring);
+
+            // Animated ring rotation
+            function animateRing() {
+                ring.rotation.z += 0.001;
+                requestAnimationFrame(animateRing);
+            }
+            animateRing();
+        }
+
+        function createChests() {
+            chestTypes.forEach((chestType, index) => {
+                const chest = createChest(chestType);
+                chest.userData.chestType = chestType;
+                chest.userData.index = index;
+                chestObjects.push(chest);
+                scene.add(chest);
+
+                // Add particle system for higher rarity chests
+                if (chestType.emissiveIntensity > 0) {
+                    createChestParticles(chest, chestType);
+                }
+            });
+        }
+
+        function createChest(chestType) {
+            const chestGroup = new THREE.Group();
+
+            // Chest Base (bottom part)
+            const baseGeometry = new THREE.BoxGeometry(2, 1.5, 1.5);
+            const baseMaterial = new THREE.MeshStandardMaterial({
+                color: chestType.color,
+                emissive: chestType.emissive,
+                emissiveIntensity: chestType.emissiveIntensity,
+                roughness: 0.5,
+                metalness: 0.7
+            });
+            const base = new THREE.Mesh(baseGeometry, baseMaterial);
+            base.castShadow = true;
+            base.receiveShadow = true;
+            chestGroup.add(base);
+
+            // Chest Lid (top part)
+            const lidGeometry = new THREE.BoxGeometry(2, 0.3, 1.5);
+            const lid = new THREE.Mesh(lidGeometry, baseMaterial);
+            lid.position.y = 0.9;
+            lid.castShadow = true;
+            chestGroup.add(lid);
+
+            // Lock decoration
+            const lockGeometry = new THREE.BoxGeometry(0.3, 0.4, 0.2);
+            const lockMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffd700,
+                emissive: 0xffd700,
+                emissiveIntensity: 0.5,
+                roughness: 0.3,
+                metalness: 0.9
+            });
+            const lock = new THREE.Mesh(lockGeometry, lockMaterial);
+            lock.position.set(0, 0, 0.8);
+            chestGroup.add(lock);
+
+            // Position chest
+            chestGroup.position.set(
+                chestType.position.x,
+                1.5,
+                chestType.position.z
+            );
+
+            // Store lid reference for opening animation
+            chestGroup.userData.lid = lid;
+            chestGroup.userData.lock = lock;
+            chestGroup.userData.isOpening = false;
+            chestGroup.userData.isOpen = false;
+
+            return chestGroup;
+        }
+
+        function createChestParticles(chest, chestType) {
+            const particleCount = Math.floor(chestType.emissiveIntensity * 100);
+            const particleGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+
+            const particleMaterial = new THREE.PointsMaterial({
+                color: chestType.emissive,
+                size: 0.1,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 3;
+                positions[i + 1] = Math.random() * 3;
+                positions[i + 2] = (Math.random() - 0.5) * 3;
+            }
+
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+            particleSystem.position.copy(chest.position);
+
+            scene.add(particleSystem);
+            particles.push({ system: particleSystem, chest: chest });
+        }
+
+        function openChest(chest) {
+            const chestType = chest.userData.chestType;
+
+            if (gameState.gold < chestType.cost) {
+                showMessage('Not enough gold! 💰', '#ff0000');
+                return;
+            }
+
+            if (chest.userData.isOpening || chest.userData.isOpen) {
+                return;
+            }
+
+            // Deduct cost
+            gameState.gold -= chestType.cost;
+            gameState.chestsOpened++;
+            chest.userData.isOpening = true;
+
+            // Opening animation
+            animateChestOpening(chest, chestType);
+
+            // Update UI
+            updateHUD();
+        }
+
+        function animateChestOpening(chest, chestType) {
+            const lid = chest.userData.lid;
+            const lock = chest.userData.lock;
+            let angle = 0;
+            const maxAngle = Math.PI * 0.6;
+
+            // Create explosion of light
+            createLightExplosion(chest.position, chestType.emissive);
+
+            // Animate lid opening
+            const openInterval = setInterval(() => {
+                angle += 0.05;
+                lid.rotation.x = -angle;
+                lid.position.z = Math.sin(angle) * 0.75;
+                lid.position.y = 0.9 + Math.sin(angle) * 0.5;
+
+                // Make lock disappear
+                lock.scale.multiplyScalar(0.95);
+
+                if (angle >= maxAngle) {
+                    clearInterval(openInterval);
+                    chest.userData.isOpening = false;
+                    chest.userData.isOpen = true;
+
+                    // Generate and spawn items
+                    setTimeout(() => {
+                        spawnItems(chest, chestType);
+                    }, 500);
+                }
+            }, 16);
+        }
+
+        function createLightExplosion(position, color) {
+            // Create expanding light sphere
+            const explosionGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+            const explosionMaterial = new THREE.MeshBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 1
+            });
+            const explosion = new THREE.Mesh(explosionGeometry, explosionMaterial);
+            explosion.position.copy(position);
+            scene.add(explosion);
+
+            // Animate explosion
+            let scale = 1;
+            const expandInterval = setInterval(() => {
+                scale += 0.3;
+                explosion.scale.set(scale, scale, scale);
+                explosionMaterial.opacity -= 0.05;
+
+                if (explosionMaterial.opacity <= 0) {
+                    clearInterval(expandInterval);
+                    scene.remove(explosion);
+                }
+            }, 16);
+
+            // Particle burst
+            createParticleBurst(position, color);
+        }
+
+        function createParticleBurst(position, color) {
+            const particleCount = 50;
+            for (let i = 0; i < particleCount; i++) {
+                const geometry = new THREE.SphereGeometry(0.05, 8, 8);
+                const material = new THREE.MeshBasicMaterial({
+                    color: color,
+                    transparent: true,
+                    opacity: 1
+                });
+                const particle = new THREE.Mesh(geometry, material);
+                particle.position.copy(position);
+
+                const velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.3,
+                    Math.random() * 0.3,
+                    (Math.random() - 0.5) * 0.3
+                );
+
+                scene.add(particle);
+
+                // Animate particle
+                const lifetime = 60;
+                let frame = 0;
+                const animateParticle = () => {
+                    frame++;
+                    particle.position.add(velocity);
+                    velocity.y -= 0.005; // gravity
+                    material.opacity -= 1 / lifetime;
+
+                    if (frame < lifetime) {
+                        requestAnimationFrame(animateParticle);
+                    } else {
+                        scene.remove(particle);
+                    }
+                };
+                animateParticle();
+            }
+        }
+
+        function spawnItems(chest, chestType) {
+            const itemCount = Math.floor(
+                Math.random() * (chestType.itemCount.max - chestType.itemCount.min + 1)
+            ) + chestType.itemCount.min;
+
+            const items = [];
+            for (let i = 0; i < itemCount; i++) {
+                items.push(generateItem());
+            }
+
+            // Create 3D items floating out
+            items.forEach((item, index) => {
+                setTimeout(() => {
+                    createFloatingItem(item, chest.position, index, items.length);
+                    gameState.inventory.push(item);
+                    gameState.totalValue += item.value;
+                }, index * 200);
+            });
+
+            showMessage(`Found ${itemCount} items! Press E to collect`, '#ffd700');
+            updateHUD();
+        }
+
+        function generateItem() {
+            const types = Object.keys(itemTemplates);
+            const type = types[Math.floor(Math.random() * types.length)];
+            const template = itemTemplates[type];
+
+            const rarities = Object.keys(rarityMultipliers);
+            const rarity = rarities[Math.floor(Math.random() * rarities.length)];
+            const rarityInfo = rarityMultipliers[rarity];
+
+            const name = template.names[Math.floor(Math.random() * template.names.length)];
+            const value = Math.floor(template.baseValue * rarityInfo.multiplier * (0.8 + Math.random() * 0.4));
+
+            return {
+                id: Date.now() + Math.random(),
+                type: type,
+                name: name,
+                rarity: rarity,
+                value: value,
+                color: template.color
+            };
+        }
+
+        function createFloatingItem(item, chestPosition, index, total) {
+            // Create item geometry based on type
+            let geometry;
+            if (item.type === 'weapons') {
+                geometry = new THREE.ConeGeometry(0.2, 0.8, 4);
+            } else if (item.type === 'armor') {
+                geometry = new THREE.BoxGeometry(0.5, 0.6, 0.1);
+            } else if (item.type === 'potions') {
+                geometry = new THREE.CylinderGeometry(0.15, 0.15, 0.6, 8);
+            } else {
+                geometry = new THREE.OctahedronGeometry(0.3);
+            }
+
+            const material = new THREE.MeshStandardMaterial({
+                color: item.color,
+                emissive: rarityMultipliers[item.rarity].color,
+                emissiveIntensity: 0.5,
+                roughness: 0.3,
+                metalness: 0.7
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+
+            // Position in a circle above the chest
+            const angle = (index / total) * Math.PI * 2;
+            const radius = 2;
+            mesh.position.set(
+                chestPosition.x + Math.cos(angle) * radius,
+                chestPosition.y + 2,
+                chestPosition.z + Math.sin(angle) * radius
+            );
+
+            mesh.userData.item = item;
+            mesh.userData.floatSpeed = Math.random() * 0.02 + 0.01;
+            mesh.userData.rotationSpeed = Math.random() * 0.05 + 0.02;
+            mesh.userData.floatOffset = Math.random() * Math.PI * 2;
+
+            scene.add(mesh);
+            floatingItems.push(mesh);
+        }
+
+        function collectAllItems() {
+            if (floatingItems.length === 0) {
+                showMessage('No items to collect!', '#ff8800');
+                return;
+            }
+
+            const count = floatingItems.length;
+            floatingItems.forEach(itemMesh => {
+                scene.remove(itemMesh);
+            });
+            floatingItems = [];
+
+            showMessage(`Collected ${count} items! ✨`, '#00ff00');
+        }
+
+        function sellAllItems() {
+            if (gameState.inventory.length === 0) {
+                showMessage('No items to sell!', '#ff8800');
+                return;
+            }
+
+            const totalValue = gameState.inventory.reduce((sum, item) => sum + item.value, 0);
+            gameState.gold += totalValue;
+            gameState.inventory = [];
+
+            showMessage(`Sold all items for ${totalValue} gold! 💰`, '#00ff00');
+            updateHUD();
+        }
+
+        function showMessage(text, color) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.style.borderColor = color;
+            messageEl.classList.add('show');
+
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 2000);
+        }
+
+        function updateHUD() {
+            document.getElementById('goldDisplay').textContent = gameState.gold.toLocaleString();
+            document.getElementById('chestsDisplay').textContent = gameState.chestsOpened.toLocaleString();
+            document.getElementById('valueDisplay').textContent = gameState.totalValue.toLocaleString();
+        }
+
+        // Input Handlers
+        function onKeyDown(event) {
+            switch (event.code) {
+                case 'KeyW': controls.forward = true; break;
+                case 'KeyS': controls.backward = true; break;
+                case 'KeyA': controls.left = true; break;
+                case 'KeyD': controls.right = true; break;
+                case 'KeyE': collectAllItems(); break;
+                case 'KeyQ': sellAllItems(); break;
+            }
+        }
+
+        function onKeyUp(event) {
+            switch (event.code) {
+                case 'KeyW': controls.forward = false; break;
+                case 'KeyS': controls.backward = false; break;
+                case 'KeyA': controls.left = false; break;
+                case 'KeyD': controls.right = false; break;
+            }
+        }
+
+        function onMouseMove(event) {
+            // Update raycaster for hover detection
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+
+        function onPointerMove(event) {
+            // First-person camera rotation
+            const movementX = event.movementX || 0;
+            const movementY = event.movementY || 0;
+
+            camera.rotation.y -= movementX * 0.002;
+            camera.rotation.x -= movementY * 0.002;
+
+            // Limit vertical rotation
+            camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
+        }
+
+        function onMouseClick() {
+            if (selectedChest) {
+                openChest(selectedChest);
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Update movement
+            updateMovement();
+
+            // Update raycaster
+            raycaster.setFromCamera(new THREE.Vector2(0, 0), camera); // Center of screen
+            const intersects = raycaster.intersectObjects(chestObjects, true);
+
+            if (intersects.length > 0) {
+                const intersectedChest = intersects[0].object.parent;
+                selectedChest = intersectedChest;
+                document.getElementById('crosshair').classList.add('active');
+            } else {
+                selectedChest = null;
+                document.getElementById('crosshair').classList.remove('active');
+            }
+
+            // Animate particles
+            particles.forEach(({ system, chest }) => {
+                const positions = system.geometry.attributes.position.array;
+                for (let i = 0; i < positions.length; i += 3) {
+                    positions[i + 1] += 0.02;
+                    if (positions[i + 1] > 3) {
+                        positions[i + 1] = 0;
+                    }
+                }
+                system.geometry.attributes.position.needsUpdate = true;
+            });
+
+            // Animate floating items
+            floatingItems.forEach(itemMesh => {
+                itemMesh.rotation.y += itemMesh.userData.rotationSpeed;
+                itemMesh.position.y += Math.sin(Date.now() * 0.001 + itemMesh.userData.floatOffset) * itemMesh.userData.floatSpeed;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        function updateMovement() {
+            const direction = new THREE.Vector3();
+            const right = new THREE.Vector3();
+
+            camera.getWorldDirection(direction);
+            direction.y = 0;
+            direction.normalize();
+
+            right.crossVectors(camera.up, direction).normalize();
+
+            velocity.set(0, 0, 0);
+
+            if (controls.forward) velocity.add(direction);
+            if (controls.backward) velocity.sub(direction);
+            if (controls.left) velocity.add(right);
+            if (controls.right) velocity.sub(right);
+
+            velocity.normalize().multiplyScalar(moveSpeed);
+            camera.position.add(velocity);
+
+            // Keep camera above ground
+            if (camera.position.y < 2) camera.position.y = 2;
+
+            // Keep camera in bounds (on platform)
+            const distFromCenter = Math.sqrt(camera.position.x ** 2 + camera.position.z ** 2);
+            if (distFromCenter > 28) {
+                camera.position.x = (camera.position.x / distFromCenter) * 28;
+                camera.position.z = (camera.position.z / distFromCenter) * 28;
+            }
+        }
+
+        // Initialize the game
+        window.addEventListener('load', init);
     </script>
 </body>
 </html>
